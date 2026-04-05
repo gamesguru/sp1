@@ -374,6 +374,7 @@ impl<F: PrimeField32> RiscvAir<F> {
             [Bn254Fp2Mul].as_slice(),
             [Bls12381Decompress].as_slice(),
             [Poseidon2].as_slice(),
+            [TopologicalRoute].as_slice(),
         ]
         .into_iter()
         .map(|ids| extend_base(&base_precompile_cluster, ids.iter().cloned()));
@@ -425,7 +426,6 @@ impl<F: PrimeField32> RiscvAir<F> {
             [Sha256Extend, Sha256ExtendControl, Sha256Compress, Sha256CompressControl].as_slice(),
             [Uint256Ops].as_slice(),
             [Mprotect].as_slice(),
-            [TopologicalRoute].as_slice(),
             [Poseidon2].as_slice(),
         ];
 
