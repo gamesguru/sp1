@@ -217,6 +217,8 @@ pub enum RiscvAirId {
     PageProtGlobalFinalize = 71,
     /// The poseidon2 chip.
     Poseidon2 = 72,
+    /// The topological route chip.
+    TopologicalRoute = 73,
 }
 
 impl RiscvAirId {
@@ -313,6 +315,7 @@ impl RiscvAirId {
                 | RiscvAirId::Bn254Fp2MulAssign
                 | RiscvAirId::Bls12381Decompress
                 | RiscvAirId::Poseidon2
+                | RiscvAirId::TopologicalRoute
         )
     }
 

@@ -16,6 +16,7 @@ use super::{
             weierstrass_double_assign_syscall,
         },
     },
+    topology::topological_route,
     write::write,
 };
 
@@ -156,6 +157,7 @@ pub fn ecall_handler(ctx: &mut impl SyscallContext, code: SyscallCode) -> u64 {
             ctx.set_exit_code(arg1 as u32);
             None
         }
+        SyscallCode::TOPOLOGICAL_ROUTE => unsafe { topological_route(ctx, arg1, arg2) },
         SyscallCode::MPROTECT
         | SyscallCode::VERIFY_SP1_PROOF
         | SyscallCode::COMMIT

@@ -9,6 +9,7 @@ mod sha256_extend;
 mod u256x2048_mul;
 mod uint256;
 mod uint256_ops;
+mod topology;
 
 use super::{MemoryLocalEvent, PageProtLocalEvent, SyscallEvent};
 use crate::{deserialize_hashmap_as_vec, serialize_hashmap_as_vec, SyscallCode};
@@ -27,6 +28,7 @@ use strum::{EnumIter, IntoEnumIterator};
 pub use u256x2048_mul::*;
 pub use uint256::*;
 pub use uint256_ops::*;
+pub use topology::*;
 
 // TODO: maybe Box one of the events?
 #[allow(clippy::large_enum_variant)]
@@ -89,6 +91,8 @@ pub enum PrecompileEvent {
     Mprotect(MProtectEvent),
     /// POSEIDON2 precompile event.
     POSEIDON2(Poseidon2PrecompileEvent),
+    /// Topological Route precompile event.
+    TopologicalRoute(TopologicalRouteEvent),
 }
 
 /// Trait to retrieve all the local memory events from a vec of precompile events.
@@ -161,6 +165,7 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 PrecompileEvent::Mprotect(_) => {
                     // Mprotect doesn't have local memory access events
                 }
+                PrecompileEvent::TopologicalRoute(_) => {}
             }
         }
 
@@ -184,6 +189,7 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 PrecompileEvent::POSEIDON2(e) => {
                     iterators.push(e.local_page_prot_access.iter());
                 }
+                PrecompileEvent::TopologicalRoute(_) => {}
                 PrecompileEvent::U256xU2048Mul(e) => {
                     iterators.push(e.local_page_prot_access.iter());
                 }
