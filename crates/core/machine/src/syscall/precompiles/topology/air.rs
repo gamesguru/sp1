@@ -1,5 +1,5 @@
 use core::borrow::Borrow;
-use slop_air::{Air, AirBuilder, BaseAir};
+use slop_air::{Air, BaseAir};
 use slop_algebra::{AbstractField, PrimeField32};
 use slop_matrix::Matrix;
 use sp1_core_executor::{events::PrecompileEvent, ExecutionRecord, Program, SyscallCode};
@@ -119,20 +119,17 @@ where
         let local = main.row_slice(0);
         let local: &TopologyCols<AB::Var> = (*local).borrow();
 
-        let next = main.row_slice(1);
-        let next: &TopologyCols<AB::Var> = (*next).borrow();
-
         builder.assert_bool(local.is_routing);
 
         // DEGREE-2 CHECK: Instead of HashMap lookups, verify the edge topology natively.
         // As defined in the advanced graph result equation provided by your advisor:
-        let diff = next.current_node - local.current_node;
+        let diff = local.next_node - local.current_node;
 
         // Let's assume VALID_HOP_DISTANCE is 1 for the linear array hack natively verified in Plonky3
         let valid_hop_distance = AB::Expr::from_canonical_u32(1);
 
         // Enforce valid routing adjacency directly in the Plonky3 field
-        builder.when_transition().assert_zero(local.is_routing * (diff - valid_hop_distance));
+        builder.assert_zero(local.is_routing * (diff - valid_hop_distance));
 
         // Receive the syscall interaction
         builder.receive_syscall(
