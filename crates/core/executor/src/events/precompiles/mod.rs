@@ -6,10 +6,10 @@ mod mprotect;
 mod poseidon2;
 mod sha256_compress;
 mod sha256_extend;
+mod topology;
 mod u256x2048_mul;
 mod uint256;
 mod uint256_ops;
-mod topology;
 
 use super::{MemoryLocalEvent, PageProtLocalEvent, SyscallEvent};
 use crate::{deserialize_hashmap_as_vec, serialize_hashmap_as_vec, SyscallCode};
@@ -25,10 +25,10 @@ use serde::{Deserialize, Serialize};
 pub use sha256_compress::*;
 pub use sha256_extend::*;
 use strum::{EnumIter, IntoEnumIterator};
+pub use topology::*;
 pub use u256x2048_mul::*;
 pub use uint256::*;
 pub use uint256_ops::*;
-pub use topology::*;
 
 // TODO: maybe Box one of the events?
 #[allow(clippy::large_enum_variant)]

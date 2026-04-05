@@ -59,6 +59,7 @@ pub(crate) mod riscv_chips {
                 sha256::{
                     ShaCompressChip, ShaCompressControlChip, ShaExtendChip, ShaExtendControlChip,
                 },
+                topology::TopologyChip,
                 u256x2048_mul::U256x2048MulChip,
                 uint256::Uint256MulChip,
                 uint256_ops::Uint256OpsChip,
@@ -222,6 +223,8 @@ pub enum RiscvAir<F: PrimeField32> {
     Bn254Fp2AddSub(Fp2AddSubAssignChip<Bn254BaseField>),
     /// A precompile for mprotect syscalls.
     Mprotect(MProtectChip),
+    /// A precompile for Matrix topological route resolution.
+    TopologicalRoute(TopologyChip),
     /// A precompile for Poseidon2 permutation.
     Poseidon2(Poseidon2Chip),
 }
@@ -278,6 +281,7 @@ impl<F: PrimeField32> RiscvAir<F> {
                 WeierstrassDecompressChip::<SwCurve<Bls12381Parameters>>::with_lexicographic_rule(),
             ),
             RiscvAir::Mprotect(MProtectChip::default()),
+            RiscvAir::TopologicalRoute(TopologyChip::new()),
             RiscvAir::Poseidon2(Poseidon2Chip::new()),
             RiscvAir::SyscallCore(SyscallChip::core()),
             RiscvAir::SyscallPrecompile(SyscallChip::precompile()),
@@ -421,6 +425,7 @@ impl<F: PrimeField32> RiscvAir<F> {
             [Sha256Extend, Sha256ExtendControl, Sha256Compress, Sha256CompressControl].as_slice(),
             [Uint256Ops].as_slice(),
             [Mprotect].as_slice(),
+            [TopologicalRoute].as_slice(),
             [Poseidon2].as_slice(),
         ];
 
@@ -640,6 +645,10 @@ impl<F: PrimeField32> RiscvAir<F> {
         let mprotect = Chip::new(RiscvAir::Mprotect(MProtectChip::default()));
         costs.insert(mprotect.name().to_string(), mprotect.cost());
         chips.push(mprotect);
+
+        let topological_route = Chip::new(RiscvAir::TopologicalRoute(TopologyChip::new()));
+        costs.insert(topological_route.name().to_string(), topological_route.cost());
+        chips.push(topological_route);
 
         let syscall_core = Chip::new(RiscvAir::SyscallCore(SyscallChip::core()));
         costs.insert(syscall_core.name().to_string(), syscall_core.cost());
@@ -949,6 +958,7 @@ impl From<RiscvAirDiscriminants> for RiscvAirId {
             RiscvAirDiscriminants::KeccakPControl => RiscvAirId::KeccakPermuteControl,
             RiscvAirDiscriminants::Mprotect => RiscvAirId::Mprotect,
             RiscvAirDiscriminants::Poseidon2 => RiscvAirId::Poseidon2,
+            RiscvAirDiscriminants::TopologicalRoute => RiscvAirId::TopologicalRoute,
         }
     }
 }

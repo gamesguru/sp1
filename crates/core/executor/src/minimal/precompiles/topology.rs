@@ -1,5 +1,4 @@
 use sp1_jit::SyscallContext;
-use crate::SyscallCode;
 
 pub(crate) unsafe fn topological_route(
     _ctx: &mut impl SyscallContext,

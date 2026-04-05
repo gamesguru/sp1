@@ -8,6 +8,7 @@ use super::{
         keccak::keccak_permute,
         poseidon2::poseidon2,
         sha256::{sha256_compress, sha256_extend},
+        topology::topological_route,
         uint256::uint256_mul,
         uint256_ops::uint256_ops,
         uint256x2048::u256x2048_mul,
@@ -16,7 +17,6 @@ use super::{
             weierstrass_double_assign_syscall,
         },
     },
-    topology::topological_route,
     write::write,
 };
 
