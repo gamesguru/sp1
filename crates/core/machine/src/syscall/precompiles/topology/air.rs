@@ -98,6 +98,7 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
             cols.is_routing = F::one();
 
             let mut diff_bit_idx = 0;
+            let mut diff_count = 0;
             // Unpack u32 into 10 bits and find the single differing bit for the hypercube hop
             for i in 0..DIM {
                 let bit = (event.current_node >> i) & 1;
@@ -108,8 +109,13 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
                 cols.selectors[i] = F::zero();
                 if bit != next_bit {
                     diff_bit_idx = i;
+                    diff_count += 1;
                 }
             }
+            debug_assert_eq!(
+                diff_count, 1,
+                "Exactly one bit must differ for a valid hypercube hop"
+            );
             // Mark the selector dimension
             cols.selectors[diff_bit_idx] = F::one();
         });
