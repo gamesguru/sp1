@@ -4,16 +4,18 @@ use crate::{
     SyscallCode,
 };
 
+pub const TOPOLOGY_DIM: u32 = 10;
+
 pub(crate) fn validate_hop(arg1: u64, arg2: u64) -> Result<(u32, u32), String> {
     let current_node =
         u32::try_from(arg1).map_err(|_| format!("current_node {arg1} exceeds u32"))?;
     let next_node = u32::try_from(arg2).map_err(|_| format!("next_node {arg2} exceeds u32"))?;
 
     let xor_diff = current_node ^ next_node;
-    if current_node >= (1 << 10) || next_node >= (1 << 10) {
+    if current_node >= (1 << TOPOLOGY_DIM) || next_node >= (1 << TOPOLOGY_DIM) {
         return Err(format!(
-            "TopologicalRoute precompile error: node IDs must be < {} (10-bit hypercube). Got {current_node} -> {next_node}.",
-            1 << 10
+            "TopologicalRoute precompile error: node IDs must be < {} ({TOPOLOGY_DIM}-bit hypercube). Got {current_node} -> {next_node}.",
+            1 << TOPOLOGY_DIM
         ));
     }
 
