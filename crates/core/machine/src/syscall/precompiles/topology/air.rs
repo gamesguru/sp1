@@ -83,6 +83,7 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
             unsafe { core::slice::from_raw_parts_mut(buffer_ptr, num_event_rows * NUM_COLS) };
 
         values.chunks_mut(NUM_COLS).enumerate().for_each(|(idx, row)| {
+            let syscall_event = &route_events[idx].0;
             let event = &route_events[idx].1;
             let event = if let PrecompileEvent::TopologicalRoute(event) = event {
                 event
@@ -92,8 +93,8 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
 
             let cols: &mut TopologyCols<F> = row.borrow_mut();
 
-            cols.clk_high = F::zero();
-            cols.clk_low = F::zero();
+            cols.clk_high = F::from_canonical_u32((syscall_event.clk >> 24) as u32);
+            cols.clk_low = F::from_canonical_u32((syscall_event.clk & 0xFFFFFF) as u32);
             cols.is_routing = F::one();
 
             let mut diff_bit_idx = 0;
