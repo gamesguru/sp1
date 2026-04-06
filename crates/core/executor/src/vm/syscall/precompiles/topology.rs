@@ -4,6 +4,27 @@ use crate::{
     SyscallCode,
 };
 
+/// The dimensionality of the hypercube graph used for oblivious routing constraints.
+///
+/// Design Philosophy:
+/// - **10 Dimensions (1024 nodes):** Chosen as a strictly power-of-two graph size. This aligns
+///   perfectly with the fundamental paddings required by STARK-based execution traces, eliminating
+///   the overhead of uneven constraint tables.
+/// - **Oblivious & Predetermined Routing:** Hypercubes provide highly symmetric, highly
+///   connected paths between any two nodes. By operating on a hypercube, data-flow algorithms
+///   can determine exact, collision-free paths obliviously (independent of the actual data payload).
+///   This prevents side-channel leakage and ensures a strictly deterministic execution trace
+///   length regardless of the routing choices.
+/// - **Hardware Efficiency (CPU & GPU):** Because the graph nodes are represented merely by bits,
+///   validating a "hop" between two nodes across the network is reduced to a simple integer `XOR`
+///   and a hardware-native `count_ones()` instruction. This maps perfectly to the parallelized
+///   architectures of modern GPUs and the ALUs of CPUs, achieving maximum performance with
+///   negligible arithmetic overhead compared to arbitrary graph structures.
+/// - **Diameter vs Optimality:** While a 10-D hypercube has a slightly wider diameter than heavily
+///   optimized arbitrary-degree topologies (e.g., odd dimensional models or specific butterfly
+///   networks), its uniform node degree and bitwise traversal rule make it definitively ideal for
+///   ZK circuits where mathematical constraint simplicity drastically outweighs traditional
+///   shortest-path routing.
 pub const TOPOLOGY_DIM: u32 = 10;
 
 pub(crate) fn validate_hop(arg1: u64, arg2: u64) -> Result<(u32, u32), String> {
