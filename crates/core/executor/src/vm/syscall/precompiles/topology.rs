@@ -10,6 +10,13 @@ pub(crate) fn validate_hop(arg1: u64, arg2: u64) -> Result<(u32, u32), String> {
     let next_node = u32::try_from(arg2).map_err(|_| format!("next_node {arg2} exceeds u32"))?;
 
     let xor_diff = current_node ^ next_node;
+    if current_node >= (1 << 10) || next_node >= (1 << 10) {
+        return Err(format!(
+            "TopologicalRoute precompile error: node IDs must be < {} (10-bit hypercube). Got {current_node} -> {next_node}.",
+            1 << 10
+        ));
+    }
+
     if xor_diff.count_ones() != 1 {
         return Err(format!(
             "TopologicalRoute precompile error: Invalid hop from {current_node} to {next_node}. Exactly one bit must differ."
