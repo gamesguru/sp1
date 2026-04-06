@@ -1,5 +1,5 @@
 use core::borrow::Borrow;
-use slop_air::{Air, BaseAir};
+use slop_air::{Air, AirBuilder, BaseAir};
 use slop_algebra::{AbstractField, PrimeField32};
 use slop_matrix::Matrix;
 use sp1_core_executor::{events::PrecompileEvent, ExecutionRecord, Program, SyscallCode};
@@ -9,7 +9,7 @@ use std::{borrow::BorrowMut, mem::MaybeUninit};
 
 use crate::{air::SP1CoreAirBuilder, utils::next_multiple_of_32};
 
-pub const NUM_COLS: usize = size_of::<TopologyCols<u8>>();
+pub const DIM: usize = 10;
 
 #[derive(Debug, Clone, AlignedBorrow)]
 #[repr(C)]
@@ -18,13 +18,16 @@ pub struct TopologyCols<T> {
     pub clk_high: T,
     pub clk_low: T,
 
-    /// Node IDs for routing
-    pub current_node: T,
-    pub next_node: T,
-
     /// Is this a real routing operation or padding?
     pub is_routing: T,
+
+    /// 10-dimensional Hypercube architecture
+    pub current_bits: [T; DIM],
+    pub selectors: [T; DIM],
+    pub next_bits: [T; DIM],
 }
+
+pub const NUM_COLS: usize = size_of::<TopologyCols<u8>>();
 
 #[derive(Default)]
 pub struct TopologyChip;
@@ -89,15 +92,25 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
 
             let cols: &mut TopologyCols<F> = row.borrow_mut();
 
-            // In a real execution trace, we'd pull the exact clk, but here we just stub the clock
-            // because this is mostly simulating the degree-2 constraint you requested!
             cols.clk_high = F::zero();
             cols.clk_low = F::zero();
-
-            cols.current_node = F::from_canonical_u32(event.current_node);
-            cols.next_node = F::from_canonical_u32(event.next_node);
-
             cols.is_routing = F::one();
+
+            let mut diff_bit_idx = 0;
+            // Unpack u32 into 10 bits and find the single differing bit for the hypercube hop
+            for i in 0..DIM {
+                let bit = (event.current_node >> i) & 1;
+                let next_bit = (event.next_node >> i) & 1;
+                cols.current_bits[i] = F::from_canonical_u32(bit);
+                cols.next_bits[i] = F::from_canonical_u32(next_bit);
+
+                cols.selectors[i] = F::zero();
+                if bit != next_bit {
+                    diff_bit_idx = i;
+                }
+            }
+            // Mark the selector dimension
+            cols.selectors[diff_bit_idx] = F::one();
         });
     }
 
@@ -121,22 +134,46 @@ where
 
         builder.assert_bool(local.is_routing);
 
-        // DEGREE-2 CHECK: Instead of HashMap lookups, verify the edge topology natively.
-        // As defined in the advanced graph result equation provided by your advisor:
-        let diff = local.next_node - local.current_node;
+        // Boolean limits on bits and selectors
+        for i in 0..DIM {
+            builder.assert_bool(local.current_bits[i]);
+            builder.assert_bool(local.next_bits[i]);
+            builder.assert_bool(local.selectors[i]);
+        }
 
-        // Let's assume VALID_HOP_DISTANCE is 1 for the linear array hack natively verified in Plonky3
-        let valid_hop_distance = AB::Expr::from_canonical_u32(1);
+        // Only ONE dimension can flip (Topological Graph restriction)
+        let mut sum_selectors = AB::Expr::zero();
+        for i in 0..DIM {
+            sum_selectors += local.selectors[i].into();
+        }
+        builder.when(local.is_routing).assert_one(sum_selectors);
 
-        // Enforce valid routing adjacency directly in the Plonky3 field
-        builder.assert_zero(local.is_routing * (diff - valid_hop_distance));
+        // Bit-Flip Equation: next = current + selector - 2 * current * selector
+        let two = AB::Expr::from_canonical_usize(2);
+        for i in 0..DIM {
+            let bit = local.current_bits[i];
+            let selector = local.selectors[i];
+            let bit_flip: AB::Expr =
+                bit.into() + selector.into() - two.clone() * bit.into() * selector.into();
 
-        // Receive the syscall interaction
+            builder.when(local.is_routing).assert_eq(local.next_bits[i], bit_flip);
+        }
+
+        // Reconstruct composite node IDs
+        let mut current_node = AB::Expr::zero();
+        let mut next_node = AB::Expr::zero();
+        for i in 0..DIM {
+            let power = AB::Expr::from_canonical_u32(1 << i);
+            current_node += local.current_bits[i].into() * power.clone();
+            next_node += local.next_bits[i].into() * power;
+        }
+
+        // Receive syscall interaction, bridge EVM bounds
         builder.receive_syscall(
             local.clk_high,
             local.clk_low,
             AB::F::from_canonical_u32(SyscallCode::TOPOLOGICAL_ROUTE.syscall_id()),
-            [local.current_node.into(), local.next_node.into(), AB::Expr::zero()],
+            [current_node, next_node, AB::Expr::zero()],
             [AB::Expr::zero(), AB::Expr::zero(), AB::Expr::zero()],
             local.is_routing,
             InteractionScope::Local,
