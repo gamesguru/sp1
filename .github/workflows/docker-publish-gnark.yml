@@ -1,0 +1,69 @@
+# This workflow publishes the docker image for groth16 and plonk proving to ghcr.io.
+name: Docker Publish Gnark
+
+on:
+  workflow_dispatch:
+    inputs:
+      docker-tag:
+        description: "Docker tag to push"
+        type: string
+        required: true
+      dry-run:
+        description: "Dry run - does not push the image"
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      docker-tag:
+        description: "Docker tag to push"
+        type: string
+        required: true
+      dry-run:
+        description: "Dry run - does not push the image"
+        type: boolean
+        default: false
+
+jobs:
+  docker-publish-gnark:
+    name: docker-publish-gnark-${{ matrix.arch }}
+    runs-on: [runs-on, "runner=${{ matrix.runner }}", spot=false, "run-id=${{ github.run_id }}"]
+    permissions:
+      id-token: write
+      packages: write
+      contents: read
+
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: 64cpu-linux-x64
+          - arch: arm64
+            platform: linux/arm64
+            runner: 64cpu-linux-arm64
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Docker BuildX
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into registry ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push AMD64 image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.gnark-ffi
+          platforms: ${{ matrix.platform }}
+          push: ${{ inputs.dry-run != true }}
+          tags: |
+            ghcr.io/succinctlabs/sp1-gnark:${{ inputs.docker-tag }}
+            ghcr.io/succinctlabs/sp1-gnark:${{ github.sha }}-${{ matrix.arch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
