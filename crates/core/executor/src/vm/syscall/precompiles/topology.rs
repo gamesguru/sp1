@@ -6,14 +6,13 @@ use crate::{
 
 pub(crate) fn validate_hop(arg1: u64, arg2: u64) -> Result<(u32, u32), String> {
     let current_node =
-        u32::try_from(arg1).map_err(|_| format!("current_node {} exceeds u32", arg1))?;
-    let next_node = u32::try_from(arg2).map_err(|_| format!("next_node {} exceeds u32", arg2))?;
+        u32::try_from(arg1).map_err(|_| format!("current_node {arg1} exceeds u32"))?;
+    let next_node = u32::try_from(arg2).map_err(|_| format!("next_node {arg2} exceeds u32"))?;
 
     let xor_diff = current_node ^ next_node;
     if xor_diff.count_ones() != 1 {
         return Err(format!(
-            "TopologicalRoute precompile error: Invalid hop from {} to {}. Exactly one bit must differ.",
-            current_node, next_node
+            "TopologicalRoute precompile error: Invalid hop from {current_node} to {next_node}. Exactly one bit must differ."
         ));
     }
     Ok((current_node, next_node))
