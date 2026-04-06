@@ -16,6 +16,15 @@ pub(crate) fn topological_route<'a, RT: SyscallRuntime<'a>>(
         let current_node = u32::try_from(arg1).ok()?;
         let next_node = u32::try_from(arg2).ok()?;
 
+        // Fail fast: Ensure exactly one bit flipped before letting the VM proceed
+        let xor_diff = current_node ^ next_node;
+        if xor_diff.count_ones() != 1 {
+            panic!(
+                "TopologicalRoute precompile error: Invalid hop from {} to {}. Exactly one bit must differ.",
+                current_node, next_node
+            );
+        }
+
         let event =
             PrecompileEvent::TopologicalRoute(TopologicalRouteEvent { current_node, next_node });
 
