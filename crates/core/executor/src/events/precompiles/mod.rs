@@ -188,7 +188,11 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 PrecompileEvent::POSEIDON2(e) => {
                     iterators.push(e.local_page_prot_access.iter());
                 }
-                PrecompileEvent::TopologicalRoute(_) => {}
+                PrecompileEvent::TopologicalRoute(_) => {
+                    // TopologicalRoute is a lightweight bitwise constraint precompile.
+                    // It operates in constant-space and does not generate local memory
+                    // or page-protection traces requiring iteration/allocation overhead.
+                }
                 PrecompileEvent::U256xU2048Mul(e) => {
                     iterators.push(e.local_page_prot_access.iter());
                 }
