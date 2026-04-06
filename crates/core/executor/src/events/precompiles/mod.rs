@@ -162,10 +162,9 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 PrecompileEvent::POSEIDON2(e) => {
                     iterators.push(e.local_mem_access.iter());
                 }
-                PrecompileEvent::Mprotect(_) => {
-                    // Mprotect doesn't have local memory access events
+                PrecompileEvent::Mprotect(_) | PrecompileEvent::TopologicalRoute(_) => {
+                    // Mprotect and TopologicalRoute don't have local memory access events
                 }
-                PrecompileEvent::TopologicalRoute(_) => {}
             }
         }
 
