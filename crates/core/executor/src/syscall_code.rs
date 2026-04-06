@@ -174,7 +174,8 @@ pub enum SyscallCode {
     /// Executes the `POSEIDON2` syscall.
     POSEIDON2 = 0x00_00_01_33,
 
-    /// Executes the `TOPOLOGICAL_ROUTE` syscall for Matrix State Graph Constraints.
+    /// Executes the `TOPOLOGICAL_ROUTE` syscall.
+    /// This provides a highly optimized constraint model for oblivious hypercube routing and data-flow algorithms.
     TOPOLOGICAL_ROUTE = 0x00_01_01_40,
 }
 
