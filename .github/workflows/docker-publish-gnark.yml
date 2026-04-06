@@ -26,6 +26,7 @@ on:
 jobs:
   docker-publish-gnark:
     name: docker-publish-gnark-${{ matrix.arch }}
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on: [runs-on, "runner=${{ matrix.runner }}", spot=false, "run-id=${{ github.run_id }}"]
     permissions:
       id-token: write

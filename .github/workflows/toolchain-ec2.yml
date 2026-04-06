@@ -30,6 +30,7 @@ on:
 jobs:
   start-runner:
     name: "Start self-hosted EC2 runner"
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on: "ubuntu-latest"
     outputs:
       label: "${{ steps.start-ec2-runner.outputs.label }}"
@@ -69,6 +70,7 @@ jobs:
 
   toolchain-test:
     name: "Run toolchain test"
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on: "${{ needs.start-runner.outputs.label }}"
     needs:
       - "start-runner"
@@ -115,7 +117,7 @@ jobs:
     needs:
       - "start-runner"
       - "toolchain-test"
-    if: ${{ always() }}
+    if: ${{ always() && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
 
     steps:
       - name: "Configure AWS credentials"
