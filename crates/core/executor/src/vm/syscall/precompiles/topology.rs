@@ -13,9 +13,12 @@ pub(crate) fn topological_route<'a, RT: SyscallRuntime<'a>>(
     let clk = rt.core().clk();
 
     if RT::TRACING {
+        let current_node = u32::try_from(arg1).ok()?;
+        let next_node = u32::try_from(arg2).ok()?;
+
         let event = PrecompileEvent::TopologicalRoute(TopologicalRouteEvent {
-            current_node: arg1.try_into().unwrap(),
-            next_node: arg2.try_into().unwrap(),
+            current_node,
+            next_node,
         });
 
         let syscall_event = rt.syscall_event(

@@ -27,7 +27,7 @@ pub struct TopologyCols<T> {
     pub next_bits: [T; DIM],
 }
 
-pub const NUM_COLS: usize = size_of::<TopologyCols<u8>>();
+pub const NUM_COLS: usize = core::mem::size_of::<TopologyCols<u8>>();
 
 #[derive(Default)]
 pub struct TopologyChip;
