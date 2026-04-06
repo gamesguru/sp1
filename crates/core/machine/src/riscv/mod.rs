@@ -223,7 +223,7 @@ pub enum RiscvAir<F: PrimeField32> {
     Bn254Fp2AddSub(Fp2AddSubAssignChip<Bn254BaseField>),
     /// A precompile for mprotect syscalls.
     Mprotect(MProtectChip),
-    /// A precompile for Matrix topological route resolution.
+    /// A precompile for topological route resolution.
     TopologicalRoute(TopologyChip),
     /// A precompile for Poseidon2 permutation.
     Poseidon2(Poseidon2Chip),

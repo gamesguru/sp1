@@ -341,7 +341,7 @@ pub fn get_complexity_mapping() -> EnumMap<RiscvAirId, u64> {
     // System operations
     mapping[RiscvAirId::Mprotect] = 11;
     mapping[RiscvAirId::Poseidon2] = 497;
-    mapping[RiscvAirId::TopologicalRoute] = 14;
+    mapping[RiscvAirId::TopologicalRoute] = 42;
 
     // RISC-V instruction costs
     mapping[RiscvAirId::DivRem] = 347;

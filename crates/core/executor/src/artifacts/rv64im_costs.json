@@ -65,5 +65,5 @@
   "Bls12381FpOpAssign": 450,
   "ShaCompress": 206,
   "LoadDouble": 39,
-  "TopologicalRoute": 14
+  "TopologicalRoute": 33
 }
