@@ -329,6 +329,12 @@ fn build_outer_circuit(
 /// The base URL for the S3 bucket containing the circuit artifacts.
 pub const CIRCUIT_ARTIFACTS_URL_BASE: &str = "https://sp1-circuits.s3-us-east-2.amazonaws.com";
 
+/// Returns the base URL for the circuit artifacts.
+pub fn circuit_artifacts_url_base() -> String {
+    std::env::var("SP1_CIRCUIT_ARTIFACTS_URL")
+        .unwrap_or_else(|_| CIRCUIT_ARTIFACTS_URL_BASE.to_string())
+}
+
 /// Whether use the development mode for the circuit artifacts.
 pub(crate) fn use_development_mode() -> bool {
     // TODO: Change this after v6.0.0 binary release
@@ -398,8 +404,8 @@ pub async fn install_circuit_artifacts(build_dir: PathBuf, artifacts_type: &str)
     std::fs::create_dir_all(&build_dir)?;
 
     // Download the artifacts.
-    let download_url =
-        format!("{CIRCUIT_ARTIFACTS_URL_BASE}/{SP1_CIRCUIT_VERSION}-{artifacts_type}.tar.gz");
+    let base_url = circuit_artifacts_url_base();
+    let download_url = format!("{base_url}/{SP1_CIRCUIT_VERSION}-{artifacts_type}.tar.gz");
 
     // Create a file in the build directory to store the tar.
     let tar_path = build_dir.join("artifacts.tar.gz");
