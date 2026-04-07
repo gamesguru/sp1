@@ -59,7 +59,6 @@ pub(crate) mod riscv_chips {
                 sha256::{
                     ShaCompressChip, ShaCompressControlChip, ShaExtendChip, ShaExtendControlChip,
                 },
-                topology::TopologyChip,
                 u256x2048_mul::U256x2048MulChip,
                 uint256::Uint256MulChip,
                 uint256_ops::Uint256OpsChip,
@@ -70,6 +69,10 @@ pub(crate) mod riscv_chips {
             },
         },
     };
+
+    #[cfg(feature = "topology")]
+    pub use crate::syscall::precompiles::topology::TopologyChip;
+
     pub use sp1_curves::{
         edwards::{ed25519::Ed25519Parameters, EdwardsCurve},
         weierstrass::{
@@ -224,6 +227,7 @@ pub enum RiscvAir<F: PrimeField32> {
     /// A precompile for mprotect syscalls.
     Mprotect(MProtectChip),
     /// A precompile for topological route resolution.
+    #[cfg(feature = "topology")]
     TopologicalRoute(TopologyChip),
     /// A precompile for Poseidon2 permutation.
     Poseidon2(Poseidon2Chip),
@@ -281,6 +285,7 @@ impl<F: PrimeField32> RiscvAir<F> {
                 WeierstrassDecompressChip::<SwCurve<Bls12381Parameters>>::with_lexicographic_rule(),
             ),
             RiscvAir::Mprotect(MProtectChip::default()),
+            #[cfg(feature = "topology")]
             RiscvAir::TopologicalRoute(TopologyChip::new()),
             RiscvAir::Poseidon2(Poseidon2Chip::new()),
             RiscvAir::SyscallCore(SyscallChip::core()),
@@ -374,6 +379,7 @@ impl<F: PrimeField32> RiscvAir<F> {
             [Bn254Fp2Mul].as_slice(),
             [Bls12381Decompress].as_slice(),
             [Poseidon2].as_slice(),
+            #[cfg(feature = "topology")]
             [TopologicalRoute].as_slice(),
         ]
         .into_iter()
@@ -646,11 +652,15 @@ impl<F: PrimeField32> RiscvAir<F> {
         costs.insert(mprotect.name().to_string(), mprotect.cost());
         chips.push(mprotect);
 
-        let topological_route = Chip::new(RiscvAir::TopologicalRoute(TopologyChip::new()));
-        costs.insert(topological_route.name().to_string(), topological_route.cost());
-        chips.push(topological_route);
+        #[cfg(feature = "topology")]
+        {
+            let topological_route = Chip::new(RiscvAir::TopologicalRoute(TopologyChip::new()));
+            costs.insert(topological_route.name().to_string(), topological_route.cost());
+            chips.push(topological_route);
+        }
 
         let syscall_core = Chip::new(RiscvAir::SyscallCore(SyscallChip::core()));
+
         costs.insert(syscall_core.name().to_string(), syscall_core.cost());
         chips.push(syscall_core);
 
@@ -958,6 +968,7 @@ impl From<RiscvAirDiscriminants> for RiscvAirId {
             RiscvAirDiscriminants::KeccakPControl => RiscvAirId::KeccakPermuteControl,
             RiscvAirDiscriminants::Mprotect => RiscvAirId::Mprotect,
             RiscvAirDiscriminants::Poseidon2 => RiscvAirId::Poseidon2,
+            #[cfg(feature = "topology")]
             RiscvAirDiscriminants::TopologicalRoute => RiscvAirId::TopologicalRoute,
         }
     }
@@ -1493,7 +1504,11 @@ pub mod tests {
     //     let machine = RiscvAir::machine(config);
     //     let (pk, vk) = machine.setup(&program);
 
-    //     let serialized_pk = bincode::serialize(&pk).unwrap();
+    //     let size_msg = format!(" STARK Proof Size: {:>10} bytes", bincode::serialize(&proof).unwrap().len());
+    //     info!("│{:<56}│", size_msg);
+    //     let time_msg = format!(" STARK Proving Time: {:>10.2?}", duration);
+    //     info!("│{:<56}│", time_msg);
+    //     info!("└────────────────────────────────────────────────────────┘");
     //     let deserialized_pk: StarkProvingKey<SP1InnerPcs> =
     //         bincode::deserialize(&serialized_pk).unwrap();
     //     assert_eq!(pk.preprocessed_commit, deserialized_pk.preprocessed_commit);

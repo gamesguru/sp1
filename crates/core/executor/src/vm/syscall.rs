@@ -226,9 +226,11 @@ pub(crate) fn sp1_ecall_handler<'a, RT: SyscallRuntime<'a>>(
             precompiles::fptower::fp_op::<_, Bn254BaseField>(rt, code, args1, args2)
         }
         SyscallCode::POSEIDON2 => poseidon2::poseidon2(rt, code, args1, args2),
+        #[cfg(feature = "topology")]
         SyscallCode::TOPOLOGICAL_ROUTE => {
             precompiles::topology::topological_route(rt, code, args1, args2)
         }
+
         SyscallCode::VERIFY_SP1_PROOF
         | SyscallCode::MPROTECT
         | SyscallCode::ENTER_UNCONSTRAINED

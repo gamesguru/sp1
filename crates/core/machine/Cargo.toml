@@ -79,7 +79,10 @@ sp1-hypercube = { workspace = true }
 sp1-primitives = { workspace = true }
 
 [features]
+topology = ["sp1-core-executor/topology"]
+
 debug = []
+
 bigint-rug = ["sp1-curves/bigint-rug"]
 
 [lib]

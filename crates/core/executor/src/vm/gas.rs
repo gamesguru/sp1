@@ -29,8 +29,10 @@ impl ReportGenerator {
     pub fn new(shard_start_clk: u64) -> Self {
         let costs: HashMap<String, usize> =
             serde_json::from_str(include_str!("../artifacts/rv64im_costs.json")).unwrap();
-        let costs: EnumMap<RiscvAirId, u64> =
-            costs.into_iter().map(|(k, v)| (RiscvAirId::from_str(&k).unwrap(), v as u64)).collect();
+        let costs: EnumMap<RiscvAirId, u64> = costs
+            .into_iter()
+            .filter_map(|(k, v)| RiscvAirId::from_str(&k).ok().map(|id| (id, v as u64)))
+            .collect();
 
         Self {
             trace_cost_lookup: costs,
@@ -341,7 +343,10 @@ pub fn get_complexity_mapping() -> EnumMap<RiscvAirId, u64> {
     // System operations
     mapping[RiscvAirId::Mprotect] = 11;
     mapping[RiscvAirId::Poseidon2] = 497;
-    mapping[RiscvAirId::TopologicalRoute] = 42;
+    #[cfg(feature = "topology")]
+    {
+        mapping[RiscvAirId::TopologicalRoute] = 42;
+    }
 
     // RISC-V instruction costs
     mapping[RiscvAirId::DivRem] = 347;

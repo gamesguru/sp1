@@ -1,3 +1,5 @@
+#![cfg(feature = "topology")]
+
 use crate::{
     events::{PrecompileEvent, TopologicalRouteEvent},
     vm::syscall::SyscallRuntime,

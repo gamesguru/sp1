@@ -45,8 +45,10 @@ impl ShapeChecker {
     pub fn new(program_len: u64, shard_start_clk: u64, elem_threshold: ShardingThreshold) -> Self {
         let costs: HashMap<String, usize> =
             serde_json::from_str(include_str!("../artifacts/rv64im_costs.json")).unwrap();
-        let costs: EnumMap<RiscvAirId, u64> =
-            costs.into_iter().map(|(k, v)| (RiscvAirId::from_str(&k).unwrap(), v as u64)).collect();
+        let costs: EnumMap<RiscvAirId, u64> = costs
+            .into_iter()
+            .filter_map(|(k, v)| RiscvAirId::from_str(&k).ok().map(|id| (id, v as u64)))
+            .collect();
 
         let preprocessed_trace_area = program_len.next_multiple_of(32) * costs[RiscvAirId::Program]
             + BYTE_NUM_ROWS * costs[RiscvAirId::Byte]

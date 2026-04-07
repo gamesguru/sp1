@@ -1,36 +1,50 @@
+use core::borrow::Borrow;
 use p3_matrix::dense::RowMajorMatrix;
 use p3_matrix::Matrix;
 use rand::Rng;
 use slop_algebra::{AbstractField, PrimeField32};
 use sp1_primitives::SP1Field;
-use sp1_topology::DIM;
+use sp1_topology::{TopologyCols, DIM, NUM_COLS};
 
 use std::time::Instant;
 use tracing::{info, warn};
 
 fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
     let mut rng = rand::thread_rng();
-    let mut trace = Vec::with_capacity(num_hops * DIM * 2);
+    let mut trace = Vec::with_capacity(num_hops * NUM_COLS);
 
     let mut current_node: u32 = 0;
 
-    for _ in 0..num_hops {
-        let mut row = vec![F::zero(); DIM * 2];
+    for i in 0..num_hops {
+        let mut row = vec![F::zero(); NUM_COLS];
+        {
+            let cols: &mut TopologyCols<F> =
+                unsafe { &mut *(row.as_mut_ptr() as *mut TopologyCols<F>) };
+            cols.is_routing = F::one();
+            cols.clk_low = F::from_canonical_usize(i);
 
-        // Fill node bits
-        for (i, item) in row.iter_mut().enumerate().take(DIM) {
-            *item = F::from_canonical_u32((current_node >> i) & 1);
+            // Fill node bits
+            for (j, bit) in cols.current_bits.iter_mut().enumerate() {
+                *bit = F::from_canonical_u32((current_node >> j) & 1);
+            }
+
+            // Randomly pick exactly one bit to flip for the next hop
+            let flip_idx = rng.gen_range(0..DIM);
+            cols.selectors[flip_idx] = F::one();
+
+            // Calculate next bits
+            for j in 0..DIM {
+                let bit = cols.current_bits[j];
+                let selector = cols.selectors[j];
+                cols.next_bits[j] = bit + selector - F::from_canonical_u32(2) * bit * selector;
+            }
+
+            current_node ^= 1 << flip_idx;
         }
-
-        // Randomly pick exactly one bit to flip for the next hop
-        let flip_idx = rng.gen_range(0..DIM);
-        row[DIM + flip_idx] = F::one();
-
         trace.extend(row);
-        current_node ^= 1 << flip_idx;
     }
 
-    RowMajorMatrix::new(trace, DIM * 2)
+    RowMajorMatrix::new(trace, NUM_COLS)
 }
 
 fn main() {
@@ -58,13 +72,16 @@ fn main() {
 
     let mut constraint_violations = 0;
     (0..num_rows - 1).for_each(|i| {
-        let local = trace.row_slice(i);
-        let next = trace.row_slice(i + 1);
+        let local_slice = trace.row_slice(i);
+        let next_slice = trace.row_slice(i + 1);
+
+        let local: &TopologyCols<SP1Field> = (*local_slice).borrow();
+        let next: &TopologyCols<SP1Field> = (*next_slice).borrow();
 
         let mut selector_sum = SP1Field::zero();
         (0..DIM).for_each(|d| {
-            let bit = local[d];
-            let selector = local[DIM + d];
+            let bit = local.current_bits[d];
+            let selector = local.selectors[d];
 
             // Boolean constraint on selectors: s * (s - 1) == 0
             let bool_val = selector * (selector - SP1Field::one());
@@ -76,7 +93,7 @@ fn main() {
 
             // XOR Transition constraint: s_next == s_local + selector - 2 * s_local * selector
             let bit_flip = bit + selector - SP1Field::from_canonical_u32(2) * bit * selector;
-            if next[d] != bit_flip {
+            if next.current_bits[d] != bit_flip {
                 constraint_violations += 1;
             }
         });
@@ -97,7 +114,7 @@ fn main() {
 
     info!(
         "✓ Memory foot-print: {:.1} MB",
-        (num_rows as f64 * DIM as f64 * 2.0 * 4.0) / 1024.0 / 1024.0
+        (num_rows as f64 * NUM_COLS as f64 * 4.0) / 1024.0 / 1024.0
     );
 
     // -- STARK Proof Generation --
@@ -126,7 +143,7 @@ fn main() {
             mmcs: mmcs.clone(),
         };
 
-        let pcs = TwoAdicFriPcs::new(1, Radix2Bowers, mmcs, fri_config);
+        let pcs = TwoAdicFriPcs::new(log_n, Radix2Bowers, mmcs, fri_config);
         let config = StarkConfig::new(pcs);
         let mut challenger = DuplexChallenger::<Val, _, 16, 8>::new(perm);
         let air = TopologicalRouterAir;
@@ -139,11 +156,11 @@ fn main() {
         info!("┌────────────────────────────────────────────────────────┐");
         info!("│                PERFORMANCE REPORT                      │");
         info!("├────────────────────────────────────────────────────────┤");
-        info!(
-            "│ STARK Proof Size: {:>10} bytes               │",
-            bincode::serialize(&proof).unwrap().len()
-        );
-        info!("│ STARK Proving Time: {:>10.2?}                     │", duration);
+        let size_msg =
+            format!(" STARK Proof Size: {:>10} bytes", bincode::serialize(&proof).unwrap().len());
+        info!("│{:<56}│", size_msg);
+        let time_msg = format!(" STARK Proving Time: {:>10.2?}", duration);
+        info!("│{:<56}│", time_msg);
         info!("└────────────────────────────────────────────────────────┘");
     }
 }

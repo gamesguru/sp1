@@ -125,12 +125,8 @@ impl Program {
 
     /// Custom logic for padding the trace to a power of two according to the proof shape.
     pub fn fixed_log2_rows<F: Field, A: MachineAir<F>>(&self, air: &A) -> Option<usize> {
-        let id = RiscvAirId::from_str(air.name()).unwrap();
-        self.preprocessed_shape.as_ref().map(|shape| {
-            shape
-                .log2_height(&id)
-                .unwrap_or_else(|| panic!("Chip {} not found in specified shape", air.name()))
-        })
+        let id = RiscvAirId::from_str(air.name()).ok()?;
+        self.preprocessed_shape.as_ref().and_then(|shape| shape.log2_height(&id))
     }
 
     #[must_use]
