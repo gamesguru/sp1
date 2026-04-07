@@ -23,6 +23,7 @@ members = [
   "crates/derive",
   "crates/helper",
   "crates/hypercube",
+  "crates/hypercube-benchmark",
   "crates/perf",
   "crates/primitives",
   "crates/prover",
@@ -35,6 +36,7 @@ members = [
   "crates/prover-types",
   "crates/sdk",
   "crates/test-artifacts",
+  "crates/topology",
   "crates/verifier",
   "crates/zkvm/*",
   "slop/crates/air",
@@ -127,6 +129,7 @@ sp1-recursion-executor = { version = "6.0.2", path = "crates/recursion/executor"
 sp1-recursion-gnark-ffi = { version = "6.0.2", path = "crates/recursion/gnark-ffi", default-features = false }
 sp1-recursion-machine = { version = "6.0.2", path = "crates/recursion/machine", default-features = false }
 sp1-sdk = { version = "6.0.2", path = "crates/sdk", default-features = false }
+sp1-topology = { version = "6.0.2", path = "crates/topology" }
 sp1-verifier = { version = "6.0.2", path = "crates/verifier", default-features = false }
 sp1-zkvm = { version = "6.0.2", path = "crates/zkvm/entrypoint", default-features = false }
 test-artifacts = { path = "crates/test-artifacts" }

@@ -6724,6 +6724,7 @@ dependencies = [
  "sp1-hypercube",
  "sp1-jit",
  "sp1-primitives",
+ "sp1-topology",
  "static_assertions",
  "strum",
  "sysinfo 0.30.13",
@@ -7403,6 +7404,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp1-hypercube-benchmark"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "p3-air",
+ "p3-baby-bear",
+ "p3-commit",
+ "p3-dft",
+ "p3-field",
+ "p3-fri",
+ "p3-matrix",
+ "p3-merkle-tree",
+ "rand 0.8.5",
+ "slop-algebra",
+ "slop-baby-bear",
+ "slop-challenger",
+ "slop-commit",
+ "slop-dft",
+ "slop-fri",
+ "slop-merkle-tree",
+ "slop-symmetric",
+ "slop-uni-stark",
+ "sp1-topology",
+ "tracing-subscriber 0.3.22",
+]
+
+[[package]]
 name = "sp1-jit"
 version = "6.0.2"
 dependencies = [
@@ -7759,6 +7787,17 @@ dependencies = [
  "tracing",
  "twirp-rs",
  "zstd",
+]
+
+[[package]]
+name = "sp1-topology"
+version = "6.0.2"
+dependencies = [
+ "p3-matrix",
+ "serde",
+ "slop-air",
+ "slop-algebra",
+ "sp1-derive",
 ]
 
 [[package]]

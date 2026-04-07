@@ -1,0 +1,30 @@
+[package]
+name = "sp1-hypercube-benchmark"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+p3-air = { workspace = true }
+p3-matrix = { workspace = true }
+p3-field = { workspace = true }
+p3-baby-bear = { workspace = true }
+p3-dft = { workspace = true }
+p3-fri = { workspace = true }
+p3-merkle-tree = { workspace = true }
+p3-commit = { workspace = true }
+rand = { workspace = true }
+tracing-subscriber = { workspace = true }
+sp1-topology = { workspace = true }
+slop-baby-bear = { workspace = true }
+slop-algebra = { workspace = true }
+slop-challenger = { workspace = true }
+slop-uni-stark = { workspace = true }
+slop-symmetric = { workspace = true }
+slop-dft = { workspace = true }
+slop-fri = { workspace = true }
+slop-merkle-tree = { workspace = true }
+slop-commit = { workspace = true }
+bincode = { workspace = true }
+
+[lints]
+workspace = true

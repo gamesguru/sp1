@@ -1,0 +1,17 @@
+[package]
+name = "sp1-topology"
+description = "Topological routing AIR for SP1"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[dependencies]
+sp1-derive = { workspace = true }
+slop-algebra = { workspace = true }
+slop-air = { workspace = true }
+p3-matrix = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+
+[lints]
+workspace = true
