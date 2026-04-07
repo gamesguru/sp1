@@ -190,6 +190,7 @@ runs:
       uses: arduino/setup-protoc@v3
       with:
         version: "29.4"
+        repo-token: ${{ github.token }}
   
     - name: Echo docker buildx version
       if: github.repository_owner == 'succinctlabs'
