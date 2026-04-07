@@ -18,6 +18,7 @@ sp1-topology = { workspace = true }
 sp1-hypercube = { workspace = true }
 sp1-primitives = { workspace = true }
 rand = { workspace = true }
+tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 bincode = { workspace = true }
 

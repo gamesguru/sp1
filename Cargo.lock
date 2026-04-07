@@ -7422,6 +7422,7 @@ dependencies = [
  "sp1-hypercube",
  "sp1-primitives",
  "sp1-topology",
+ "tracing",
  "tracing-subscriber 0.3.22",
 ]
 
