@@ -33,24 +33,24 @@ impl<AB: AirBuilder> Air<AB> for TopologicalRouterAir {
         let next_bits = &next[0..DIMS];
 
         // 1. Selector Constraints: Each selector must be boolean (0 or 1)
-        for i in 0..DIMS {
-            builder.assert_bool(selectors[i].clone().into());
+        for selector in selectors.iter().take(DIMS) {
+            builder.assert_bool((*selector).into());
         }
 
         // 2. Routing Constraint: Exactly one bit must be flipped per hop.
         let mut selector_sum = AB::Expr::zero();
-        for i in 0..DIMS {
-            selector_sum += selectors[i].clone().into();
+        for selector in selectors.iter().take(DIMS) {
+            selector_sum += (*selector).into();
         }
         builder.when_transition().assert_eq(selector_sum, AB::Expr::one());
 
         // 3. Transition Constraint: next_bit[i] = local_bit[i] XOR selector[i]
         // Algebraic XOR for boolean values: A + B - 2AB
         for i in 0..DIMS {
-            let a: AB::Expr = local_bits[i].clone().into();
-            let b: AB::Expr = selectors[i].clone().into();
+            let a: AB::Expr = local_bits[i].into();
+            let b: AB::Expr = selectors[i].into();
             let xor_val = a.clone() + b.clone() - a * b * AB::F::from_canonical_u32(2);
-            builder.when_transition().assert_eq(next_bits[i].clone().into(), xor_val);
+            builder.when_transition().assert_eq(next_bits[i].into(), xor_val);
         }
     }
 }
@@ -65,8 +65,8 @@ fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
         let mut row = vec![F::zero(); DIMS * 2];
 
         // Fill node bits
-        for i in 0..DIMS {
-            row[i] = F::from_canonical_u32((current_node >> i) & 1);
+        for (i, val) in row.iter_mut().enumerate().take(DIMS) {
+            *val = F::from_canonical_u32((current_node >> i) & 1);
         }
 
         // Randomly pick exactly one bit to flip for the next hop
