@@ -144,4 +144,62 @@ fn main() {
     );
     println!("This trace is Degree-2 and uses only {} columns.", DIMS * 2);
     println!("RAM usage for this trace: ~{} MB", (num_rows * DIMS * 2 * 4) / 1024 / 1024);
+
+    // -- STARK Proof Generation --
+    if std::env::args().any(|arg| arg == "--prove") {
+        println!("--- Setting up Pure Plonky3 STARK Configuration ---");
+
+        use p3_dft::Radix2Bowers;
+        use p3_field::Field;
+        use p3_fri::{FriConfig, TwoAdicFriPcs};
+        use p3_merkle_tree::FieldMerkleTreeMmcs;
+        use slop_challenger::DuplexChallenger;
+        use slop_uni_stark::StarkConfig;
+
+        use slop_baby_bear::baby_bear_poseidon2::{my_bb_16_perm, Perm};
+        use slop_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+
+        type Val = BabyBear;
+        type Challenge = slop_algebra::extension::BinomialExtensionField<Val, 4>;
+        type Hasher = PaddingFreeSponge<Perm, 16, 8, 8>;
+        type Compress = TruncatedPermutation<Perm, 2, 8, 16>;
+        type InnerMmcs = FieldMerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            Hasher,
+            Compress,
+            8,
+        >;
+        type Dft = Radix2Bowers;
+
+        let perm = my_bb_16_perm();
+        let hasher = Hasher::new(perm.clone());
+        let compress = Compress::new(perm.clone());
+        let inner_mmcs = InnerMmcs::new(hasher, compress);
+
+        let mmcs = p3_commit::ExtensionMmcs::<Val, Challenge, InnerMmcs>::new(inner_mmcs);
+
+        let fri_config = FriConfig {
+            log_blowup: 1,
+            num_queries: 100,
+            proof_of_work_bits: 16,
+            mmcs: mmcs.clone(),
+        };
+
+        let pcs = TwoAdicFriPcs::new(1, Dft::default(), mmcs, fri_config);
+        let config = StarkConfig::new(pcs);
+
+        let mut challenger = DuplexChallenger::new(perm.clone());
+        let air = TopologicalRouterAir;
+
+        println!("--- Generating STARK Proof ---");
+        let prove_start = std::time::Instant::now();
+
+        // Pass trace into the actual STARK prover
+        let _proof = slop_uni_stark::prove(&config, &air, &mut challenger, trace, &vec![]);
+
+        println!("STARK Proving Time: {:?}", prove_start.elapsed());
+    } else {
+        println!("(Skipping cryptographic STARK proof for now. Run with `cargo run --release -p hypercube-pure-plonky3 -- --prove` to execute it.)");
+    }
 }
