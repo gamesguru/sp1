@@ -18,10 +18,13 @@ p3-fri = { workspace = true }
 slop-baby-bear = { workspace = true }
 slop-uni-stark = { workspace = true }
 slop-challenger = { workspace = true }
-slop-poseidon2 = { workspace = true }
+slop-poseidon2 = "6.0.2"
 slop-symmetric = { workspace = true }
 
 rand = "0.8"
 itertools = "0.14.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
+p3-blake3 = "0.3.2-succinct"
+p3-keccak = "0.3.2-succinct"
+slop-algebra = "6.0.2"
