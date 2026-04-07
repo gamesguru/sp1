@@ -1,8 +1,8 @@
 use p3_matrix::dense::RowMajorMatrix;
 use p3_matrix::Matrix;
-use slop_algebra::{AbstractField, PrimeField32};
 use rand::Rng;
-use slop_baby_bear::BabyBear;
+use slop_algebra::{AbstractField, PrimeField32};
+use slop_koala_bear::KoalaBear;
 use sp1_topology::DIM;
 
 fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
@@ -18,7 +18,6 @@ fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
         for (i, item) in row.iter_mut().enumerate().take(DIM) {
             *item = F::from_canonical_u32((current_node >> i) & 1);
         }
-
 
         // Randomly pick exactly one bit to flip for the next hop
         let flip_idx = rng.gen_range(0..DIM);
@@ -43,7 +42,7 @@ fn main() {
 
     // Generate Trace
     let now = std::time::Instant::now();
-    let trace = generate_trace::<BabyBear>(num_rows);
+    let trace: RowMajorMatrix<KoalaBear> = generate_trace(num_rows);
     println!("Trace generation took: {:?}", now.elapsed());
 
     println!("--- Evaluating Constraints over Execution Trace ---");
@@ -55,27 +54,27 @@ fn main() {
         let local = trace.row_slice(i);
         let next = trace.row_slice(i + 1);
 
-        let mut selector_sum = BabyBear::zero();
+        let mut selector_sum = KoalaBear::zero();
         for d in 0..DIM {
             let bit = local[d];
             let selector = local[DIM + d];
 
             // Boolean constraint on selectors
-            let bool_val = selector * (selector - BabyBear::one());
-            if bool_val != BabyBear::zero() {
+            let bool_val = selector * (selector - KoalaBear::one());
+            if bool_val != KoalaBear::zero() {
                 constraint_violations += 1;
             }
 
             selector_sum += selector;
 
             // XOR Transition constraint: s_next == s_local + selector - 2 * s_local * selector
-            let bit_flip = bit + selector - BabyBear::from_canonical_u32(2) * bit * selector;
+            let bit_flip = bit + selector - KoalaBear::from_canonical_u32(2) * bit * selector;
             if next[d] != bit_flip {
                 constraint_violations += 1;
             }
         }
 
-        if selector_sum != BabyBear::one() {
+        if selector_sum != KoalaBear::one() {
             constraint_violations += 1;
         }
     }
@@ -93,17 +92,17 @@ fn main() {
     if std::env::args().any(|arg| arg == "--prove") {
         println!("--- Setting up Pure Plonky3 STARK Configuration ---");
 
-        use p3_fri::{FriConfig, TwoAdicFriPcs};
         use p3_dft::Radix2Bowers;
+        use p3_fri::{FriConfig, TwoAdicFriPcs};
         use p3_merkle_tree::FieldMerkleTreeMmcs;
         use slop_challenger::DuplexChallenger;
         use slop_uni_stark::StarkConfig;
+        use sp1_primitives::poseidon2_init;
         use sp1_topology::TopologicalRouterAir;
-        use slop_baby_bear::baby_bear_poseidon2::{my_bb_16_perm, Perm};
 
-        // Standard SP1 BabyBear STARK parameters
-        type Val = BabyBear;
-        let perm = Perm::new(my_bb_16_perm);
+        // Standard SP1 KoalaBear STARK parameters
+        type Val = KoalaBear;
+        let perm = poseidon2_init();
         let mmcs = FieldMerkleTreeMmcs::<Val, Val, _, 8>::new(perm.clone());
         let fri_config = FriConfig {
             log_blowup: 1,
@@ -114,7 +113,7 @@ fn main() {
 
         let pcs = TwoAdicFriPcs::new(1, Radix2Bowers::default(), mmcs, fri_config);
         let config = StarkConfig::new(pcs);
-        let mut challenger = DuplexChallenger::new(perm.clone());
+        let mut challenger = DuplexChallenger::new(perm);
         let air = TopologicalRouterAir;
 
         println!("--- Generating STARK Proof ---");
@@ -127,4 +126,3 @@ fn main() {
         println!("STARK Proving Time: {:?}", prove_start.elapsed());
     }
 }
-
