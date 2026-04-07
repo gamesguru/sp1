@@ -89,7 +89,7 @@ fn main() {
     let num_rows = 1 << log_n;
 
     println!("--- Pure Plonky3 Topological Router Benchmark ---");
-    println!("Dimensions: {}", DIMS);
+    println!("Hypercube dimensions: {}", DIMS);
     println!("Rows (Hops): {}", num_rows);
 
     // Generate Trace
