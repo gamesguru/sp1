@@ -77,8 +77,9 @@ jobs:
             --exclude sp1-gpu-zerocheck
             --features native-gnark,experimental,profiling
         env:
-          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0
+          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0 -Ccodegen-units=16
           RUST_BACKTRACE: 1
+          SP1_CIRCUIT_ARTIFACTS_URL: ${{ vars.SP1_CIRCUIT_ARTIFACTS_URL || 'https://sp1-circuits.s3-us-east-2.amazonaws.com' }}
 
   test-arm:
     name: Test (ARM)
@@ -133,8 +134,9 @@ jobs:
             --exclude sp1-gpu-zerocheck
             --features native-gnark,experimental
         env:
-          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0
+          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0 -Ccodegen-units=16
           RUST_BACKTRACE: 1
+          SP1_CIRCUIT_ARTIFACTS_URL: ${{ vars.SP1_CIRCUIT_ARTIFACTS_URL || 'https://sp1-circuits.s3-us-east-2.amazonaws.com' }}
 
   test-verifier:
     name: Test Verifier Crate
