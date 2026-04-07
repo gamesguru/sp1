@@ -98,14 +98,43 @@ fn main() {
     println!("Trace generation took: {:?}", now.elapsed());
 
     // -- Setup Prover Config --
-    // We use Poseidon2 for performance in this benchmark
-    // Note: This is a simplified setup for demonstration
-    // In a real Plonky3 impl, you'd setup the commitment scheme and challenger.
+    if std::env::args().any(|arg| arg == "--prove") {
+        println!("--- Setting up Pure Plonky3 STARK Configuration ---");
 
-    println!(
-        "(Skipping full STARK proof for now as this requires boilerplate Challenger/FRI setup)"
-    );
-    println!("Execution trace of 131,072 hops generated successfully in memory.");
-    println!("This trace is Degree-2 and uses only {} columns.", DIMS * 2);
-    println!("RAM usage for this trace: ~{} MB", (num_rows * DIMS * 2 * 4) / 1024 / 1024);
+        use p3_blake3::Blake3;
+        use p3_dft::Radix2Bowers;
+        use p3_fri::{FriConfig, TwoAdicFriPcs};
+        use p3_symmetric::CompressionFunctionFromHasher;
+        use slop_challenger::DuplexChallenger;
+        use slop_uni_stark::StarkConfig;
+
+        type Hasher = Blake3;
+        type Compress = CompressionFunctionFromHasher<Hasher, 2, 2>;
+        type Dft = Radix2Bowers;
+
+        let fri_config = FriConfig {
+            log_blowup: 1,
+            num_queries: 100,
+            proof_of_work_bits: 16,
+            mmcs: p3_commit::ExtensionMmcs::new(Hasher::new()),
+        };
+
+        let pcs = TwoAdicFriPcs::new(fri_config, Dft::default());
+        let config = StarkConfig::new(pcs, DuplexChallenger::new(), Hasher::new());
+
+        let mut challenger = config.challenger();
+        let air = TopologicalRouterAir;
+
+        println!("--- Generating STARK Proof ---");
+        let prove_start = std::time::Instant::now();
+
+        let _proof = slop_uni_stark::prove(&config, &air, &mut challenger, trace, &vec![]);
+
+        println!("STARK Proving Time: {:?}", prove_start.elapsed());
+    } else {
+        println!("(Skipping full STARK proof for now. Run with `cargo run --release -p hypercube-pure-plonky3 -- --prove` to execute it.)");
+        println!("Execution trace of 131,072 hops generated successfully in memory.");
+        println!("This trace is Degree-2 and uses only {} columns.", DIMS * 2);
+        println!("RAM usage for this trace: ~{} MB", (num_rows * DIMS * 2 * 4) / 1024 / 1024);
+    }
 }
