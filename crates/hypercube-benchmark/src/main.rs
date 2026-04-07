@@ -5,6 +5,7 @@ use p3_matrix::dense::RowMajorMatrix;
 use p3_matrix::Matrix;
 use rand::Rng;
 use slop_baby_bear::BabyBear;
+
 /// The number of dimensions in our hypercube.
 const DIMS: usize = 10;
 
@@ -32,25 +33,24 @@ impl<AB: AirBuilder> Air<AB> for TopologicalRouterAir {
         let next_bits = &next[0..DIMS];
 
         // 1. Selector Constraints: Each selector must be boolean (0 or 1)
-        for &s in selectors {
-            builder.assert_bool(s);
+        for i in 0..DIMS {
+            builder.assert_bool(selectors[i].clone().into());
         }
 
         // 2. Routing Constraint: Exactly one bit must be flipped per hop.
         let mut selector_sum = AB::Expr::zero();
-        for &s in selectors {
-            let s_expr: AB::Expr = s.into();
-            selector_sum += s_expr;
+        for i in 0..DIMS {
+            selector_sum += selectors[i].clone().into();
         }
         builder.when_transition().assert_eq(selector_sum, AB::Expr::one());
 
         // 3. Transition Constraint: next_bit[i] = local_bit[i] XOR selector[i]
         // Algebraic XOR for boolean values: A + B - 2AB
         for i in 0..DIMS {
-            let a = local_bits[i];
-            let b = selectors[i];
-            let xor_val = a + b - a * b * AB::F::from_canonical_u32(2);
-            builder.when_transition().assert_eq(next_bits[i], xor_val);
+            let a: AB::Expr = local_bits[i].clone().into();
+            let b: AB::Expr = selectors[i].clone().into();
+            let xor_val = a.clone() + b.clone() - a * b * AB::F::from_canonical_u32(2);
+            builder.when_transition().assert_eq(next_bits[i].clone().into(), xor_val);
         }
     }
 }
@@ -65,8 +65,8 @@ fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
         let mut row = vec![F::zero(); DIMS * 2];
 
         // Fill node bits
-        for (i, val) in row.iter_mut().enumerate().take(DIMS) {
-            *val = F::from_canonical_u32((current_node >> i) & 1);
+        for i in 0..DIMS {
+            row[i] = F::from_canonical_u32((current_node >> i) & 1);
         }
 
         // Randomly pick exactly one bit to flip for the next hop
@@ -98,8 +98,7 @@ fn main() {
     println!("Trace generation took: {:?}", now.elapsed());
 
     // -- Setup Prover Config --
-    // We use Blake3 for blazing fast x86-64 hashing in this pure-plonky3 benchmark,
-    // getting rid of Poseidon2 hashes totally since we no run in a zkVM loop.
+    // We use Poseidon2 for performance in this benchmark
     // Note: This is a simplified setup for demonstration
     // In a real Plonky3 impl, you'd setup the commitment scheme and challenger.
 
