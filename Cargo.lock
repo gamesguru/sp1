@@ -3409,6 +3409,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "hypercube-pure-plonky3"
+version = "0.1.0"
+dependencies = [
+ "itertools 0.14.0",
+ "p3-air",
+ "p3-challenger",
+ "p3-commit",
+ "p3-field",
+ "p3-matrix",
+ "p3-maybe-rayon",
+ "p3-symmetric",
+ "rand 0.8.5",
+ "slop-baby-bear",
+ "slop-challenger",
+ "slop-poseidon2",
+ "slop-symmetric",
+ "slop-uni-stark",
+ "tracing",
+ "tracing-subscriber 0.3.22",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"

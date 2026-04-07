@@ -1,0 +1,25 @@
+[package]
+name = "hypercube-pure-plonky3"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Use the local optimized 'slop' versions pinned by the workspace
+p3-air = { workspace = true }
+p3-matrix = { workspace = true }
+p3-field = { workspace = true }
+p3-maybe-rayon = { workspace = true }
+p3-symmetric = { workspace = true }
+p3-commit = { workspace = true }
+p3-challenger = { workspace = true }
+
+slop-baby-bear = { workspace = true }
+slop-uni-stark = { workspace = true }
+slop-challenger = { workspace = true }
+slop-poseidon2 = { workspace = true }
+slop-symmetric = { workspace = true }
+
+rand = "0.8"
+itertools = "0.14.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
