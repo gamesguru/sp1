@@ -1,10 +1,9 @@
-use p3_field::AbstractField;
-use p3_field::PrimeField32;
 use p3_matrix::dense::RowMajorMatrix;
 use p3_matrix::Matrix;
+use slop_algebra::{AbstractField, PrimeField32};
 use rand::Rng;
 use slop_baby_bear::BabyBear;
-use sp1_topology::{TopologicalRouterAir, DIM};
+use sp1_topology::DIM;
 
 fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
     let mut rng = rand::thread_rng();
@@ -13,13 +12,13 @@ fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
     let mut current_node: u32 = 0;
 
     for _ in 0..num_hops {
-        // The original benchmark trace layout: node bits then selectors
         let mut row = vec![F::zero(); DIM * 2];
 
         // Fill node bits
-        for i in 0..DIM {
-            row[i] = F::from_canonical_u32((current_node >> i) & 1);
+        for (i, item) in row.iter_mut().enumerate().take(DIM) {
+            *item = F::from_canonical_u32((current_node >> i) & 1);
         }
+
 
         // Randomly pick exactly one bit to flip for the next hop
         let flip_idx = rng.gen_range(0..DIM);
@@ -33,10 +32,8 @@ fn generate_trace<F: PrimeField32>(num_hops: usize) -> RowMajorMatrix<F> {
 }
 
 fn main() {
-    // Setup logging
     tracing_subscriber::fmt::init();
 
-    // Test parameters
     let log_n = 17; // 131,072 rows
     let num_rows = 1 << log_n;
 
@@ -58,14 +55,14 @@ fn main() {
         let local = trace.row_slice(i);
         let next = trace.row_slice(i + 1);
 
-        let mut selector_sum = BabyBear::from_canonical_u32(0);
+        let mut selector_sum = BabyBear::zero();
         for d in 0..DIM {
             let bit = local[d];
             let selector = local[DIM + d];
 
             // Boolean constraint on selectors
-            let bool_val = selector * (selector - BabyBear::from_canonical_u32(1));
-            if bool_val != BabyBear::from_canonical_u32(0) {
+            let bool_val = selector * (selector - BabyBear::one());
+            if bool_val != BabyBear::zero() {
                 constraint_violations += 1;
             }
 
@@ -78,7 +75,7 @@ fn main() {
             }
         }
 
-        if selector_sum != BabyBear::from_canonical_u32(1) {
+        if selector_sum != BabyBear::one() {
             constraint_violations += 1;
         }
     }
@@ -89,44 +86,25 @@ fn main() {
     println!("Constraint Evaluation Time ({} rows): {:?}", num_rows, eval_start.elapsed());
     assert_eq!(constraint_violations, 0, "Trace contains constraint violations!");
 
-    println!(
-        "Execution trace of 131,072 hops generated and constraint-verified successfully in memory."
-    );
-    println!("This trace is Degree-2 and uses only {} columns.", DIM * 2);
-    println!(
-        "RAM usage for this trace: ~{:.1} MB",
-        (num_rows as f64 * DIM as f64 * 2.0 * 4.0) / 1024.0 / 1024.0
-    );
+    println!("Execution trace generated and constraint-verified successfully.");
+    println!("RAM usage: {:.1} MB", (num_rows as f64 * DIM as f64 * 2.0 * 4.0) / 1024.0 / 1024.0);
 
     // -- STARK Proof Generation --
     if std::env::args().any(|arg| arg == "--prove") {
         println!("--- Setting up Pure Plonky3 STARK Configuration ---");
 
-        use p3_challenger::CanSample;
-        use p3_field::extension::BinomialExtensionField;
         use p3_fri::{FriConfig, TwoAdicFriPcs};
+        use p3_dft::Radix2Bowers;
         use p3_merkle_tree::FieldMerkleTreeMmcs;
         use slop_challenger::DuplexChallenger;
-        use slop_dft::Radix2Bowers;
         use slop_uni_stark::StarkConfig;
-
+        use sp1_topology::TopologicalRouterAir;
         use slop_baby_bear::baby_bear_poseidon2::{my_bb_16_perm, Perm};
-        use slop_symmetric::{PaddingFreeSponge, TruncatedPermutation};
 
+        // Standard SP1 BabyBear STARK parameters
         type Val = BabyBear;
-        type Challenge = BinomialExtensionField<Val, 4>;
-        type Hasher = PaddingFreeSponge<Perm, 16, 8, 8>;
-        type Compress = TruncatedPermutation<Perm, 2, 8, 16>;
-        type InnerMmcs = FieldMerkleTreeMmcs<Val, Val, Hasher, Compress, 8>;
-        type Dft = Radix2Bowers;
-
-        let perm = my_bb_16_perm();
-        let hasher = Hasher::new(perm.clone());
-        let compress = Compress::new(perm.clone());
-        let inner_mmcs = InnerMmcs::new(hasher, compress);
-
-        let mmcs = p3_commit::ExtensionMmcs::<Val, Challenge, InnerMmcs>::new(inner_mmcs);
-
+        let perm = Perm::new(my_bb_16_perm);
+        let mmcs = FieldMerkleTreeMmcs::<Val, Val, _, 8>::new(perm.clone());
         let fri_config = FriConfig {
             log_blowup: 1,
             num_queries: 100,
@@ -134,9 +112,8 @@ fn main() {
             mmcs: mmcs.clone(),
         };
 
-        let pcs = TwoAdicFriPcs::new(1, Dft::default(), mmcs, fri_config);
+        let pcs = TwoAdicFriPcs::new(1, Radix2Bowers::default(), mmcs, fri_config);
         let config = StarkConfig::new(pcs);
-
         let mut challenger = DuplexChallenger::new(perm.clone());
         let air = TopologicalRouterAir;
 
@@ -148,7 +125,6 @@ fn main() {
 
         println!("STARK Proved length: {} bytes", bincode::serialize(&proof).unwrap().len());
         println!("STARK Proving Time: {:?}", prove_start.elapsed());
-    } else {
-        println!("(Skipping cryptographic STARK proof for now. Run with `cargo run --release -p hypercube-pure-plonky3 -- --prove` to execute it.)");
     }
 }
+
