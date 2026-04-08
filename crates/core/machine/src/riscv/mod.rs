@@ -70,7 +70,6 @@ pub(crate) mod riscv_chips {
         },
     };
 
-    #[cfg(feature = "topology")]
     pub use crate::syscall::precompiles::topology::TopologyChip;
 
     pub use sp1_curves::{
@@ -227,7 +226,6 @@ pub enum RiscvAir<F: PrimeField32> {
     /// A precompile for mprotect syscalls.
     Mprotect(MProtectChip),
     /// A precompile for topological route resolution.
-    #[cfg(feature = "topology")]
     TopologicalRoute(TopologyChip),
     /// A precompile for Poseidon2 permutation.
     Poseidon2(Poseidon2Chip),
@@ -285,7 +283,6 @@ impl<F: PrimeField32> RiscvAir<F> {
                 WeierstrassDecompressChip::<SwCurve<Bls12381Parameters>>::with_lexicographic_rule(),
             ),
             RiscvAir::Mprotect(MProtectChip::default()),
-            #[cfg(feature = "topology")]
             RiscvAir::TopologicalRoute(TopologyChip::new()),
             RiscvAir::Poseidon2(Poseidon2Chip::new()),
             RiscvAir::SyscallCore(SyscallChip::core()),
@@ -379,7 +376,6 @@ impl<F: PrimeField32> RiscvAir<F> {
             [Bn254Fp2Mul].as_slice(),
             [Bls12381Decompress].as_slice(),
             [Poseidon2].as_slice(),
-            #[cfg(feature = "topology")]
             [TopologicalRoute].as_slice(),
         ]
         .into_iter()
@@ -652,7 +648,6 @@ impl<F: PrimeField32> RiscvAir<F> {
         costs.insert(mprotect.name().to_string(), mprotect.cost());
         chips.push(mprotect);
 
-        #[cfg(feature = "topology")]
         {
             let topological_route = Chip::new(RiscvAir::TopologicalRoute(TopologyChip::new()));
             costs.insert(topological_route.name().to_string(), topological_route.cost());
@@ -968,7 +963,6 @@ impl From<RiscvAirDiscriminants> for RiscvAirId {
             RiscvAirDiscriminants::KeccakPControl => RiscvAirId::KeccakPermuteControl,
             RiscvAirDiscriminants::Mprotect => RiscvAirId::Mprotect,
             RiscvAirDiscriminants::Poseidon2 => RiscvAirId::Poseidon2,
-            #[cfg(feature = "topology")]
             RiscvAirDiscriminants::TopologicalRoute => RiscvAirId::TopologicalRoute,
         }
     }

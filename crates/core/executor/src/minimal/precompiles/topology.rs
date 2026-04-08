@@ -1,5 +1,3 @@
-#![cfg(feature = "topology")]
-
 use sp1_jit::SyscallContext;
 
 pub(crate) unsafe fn topological_route(

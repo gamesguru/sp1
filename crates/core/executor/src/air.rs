@@ -218,7 +218,6 @@ pub enum RiscvAirId {
     /// The poseidon2 chip.
     Poseidon2 = 72,
     /// The topological route chip.
-    #[cfg(feature = "topology")]
     TopologicalRoute = 73,
 }
 
@@ -288,37 +287,36 @@ impl RiscvAirId {
     /// Whether the ID represents a precompile AIR.
     #[must_use]
     pub fn is_precompile(self) -> bool {
-        match self {
+        matches!(
+            self,
             RiscvAirId::ShaExtend
-            | RiscvAirId::ShaCompress
-            | RiscvAirId::EdAddAssign
-            | RiscvAirId::EdDecompress
-            | RiscvAirId::Secp256k1Decompress
-            | RiscvAirId::Secp256k1AddAssign
-            | RiscvAirId::Secp256k1DoubleAssign
-            | RiscvAirId::Secp256r1Decompress
-            | RiscvAirId::Secp256r1AddAssign
-            | RiscvAirId::Secp256r1DoubleAssign
-            | RiscvAirId::KeccakPermute
-            | RiscvAirId::Bn254AddAssign
-            | RiscvAirId::Bn254DoubleAssign
-            | RiscvAirId::Bls12381AddAssign
-            | RiscvAirId::Bls12381DoubleAssign
-            | RiscvAirId::Uint256MulMod
-            | RiscvAirId::Uint256Ops
-            | RiscvAirId::U256XU2048Mul
-            | RiscvAirId::Bls12381FpOpAssign
-            | RiscvAirId::Bls12381Fp2AddSubAssign
-            | RiscvAirId::Bls12381Fp2MulAssign
-            | RiscvAirId::Bn254FpOpAssign
-            | RiscvAirId::Bn254Fp2AddSubAssign
-            | RiscvAirId::Bn254Fp2MulAssign
-            | RiscvAirId::Bls12381Decompress
-            | RiscvAirId::Poseidon2 => true,
-            #[cfg(feature = "topology")]
-            RiscvAirId::TopologicalRoute => true,
-            _ => false,
-        }
+                | RiscvAirId::ShaCompress
+                | RiscvAirId::EdAddAssign
+                | RiscvAirId::EdDecompress
+                | RiscvAirId::Secp256k1Decompress
+                | RiscvAirId::Secp256k1AddAssign
+                | RiscvAirId::Secp256k1DoubleAssign
+                | RiscvAirId::Secp256r1Decompress
+                | RiscvAirId::Secp256r1AddAssign
+                | RiscvAirId::Secp256r1DoubleAssign
+                | RiscvAirId::KeccakPermute
+                | RiscvAirId::Bn254AddAssign
+                | RiscvAirId::Bn254DoubleAssign
+                | RiscvAirId::Bls12381AddAssign
+                | RiscvAirId::Bls12381DoubleAssign
+                | RiscvAirId::Uint256MulMod
+                | RiscvAirId::Uint256Ops
+                | RiscvAirId::U256XU2048Mul
+                | RiscvAirId::Bls12381FpOpAssign
+                | RiscvAirId::Bls12381Fp2AddSubAssign
+                | RiscvAirId::Bls12381Fp2MulAssign
+                | RiscvAirId::Bn254FpOpAssign
+                | RiscvAirId::Bn254Fp2AddSubAssign
+                | RiscvAirId::Bn254Fp2MulAssign
+                | RiscvAirId::Bls12381Decompress
+                | RiscvAirId::Poseidon2
+                | RiscvAirId::TopologicalRoute
+        )
     }
 
     /// The number of rows in the AIR produced by each event.

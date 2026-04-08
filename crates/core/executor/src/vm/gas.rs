@@ -343,7 +343,6 @@ pub fn get_complexity_mapping() -> EnumMap<RiscvAirId, u64> {
     // System operations
     mapping[RiscvAirId::Mprotect] = 11;
     mapping[RiscvAirId::Poseidon2] = 497;
-    #[cfg(feature = "topology")]
     {
         mapping[RiscvAirId::TopologicalRoute] = 42;
     }

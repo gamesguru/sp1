@@ -57,7 +57,7 @@ fn main() {
     let num_rows = 1 << log_n;
 
     info!("┌────────────────────────────────────────────────────────┐");
-    info!("│      TOPOLOGICAL ROUTER HYPERCUBE BENCHMARK          │");
+    info!("│      TOPOLOGICAL ROUTER HYPERCUBE BENCHMARK            │");
     info!("└────────────────────────────────────────────────────────┘");
     info!("Hypercube dimensions: {}", DIM);
     info!("Rows (Hops): {}", num_rows);

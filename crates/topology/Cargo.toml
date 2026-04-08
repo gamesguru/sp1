@@ -13,5 +13,21 @@ slop-air = { workspace = true }
 p3-matrix = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 
+[dev-dependencies]
+p3-field = { workspace = true }
+p3-merkle-tree = { workspace = true }
+p3-fri = { workspace = true }
+p3-dft = { workspace = true }
+slop-koala-bear = { workspace = true }
+slop-challenger = { workspace = true }
+slop-uni-stark = { workspace = true }
+slop-symmetric = { workspace = true }
+sp1-hypercube = { workspace = true }
+sp1-primitives = { workspace = true }
+rand = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+bincode = { workspace = true }
+
 [lints]
 workspace = true

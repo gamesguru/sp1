@@ -59,7 +59,6 @@ sp1-zkvm = { workspace = true, features = ["lib"] }
 test-artifacts = { path = "../../test-artifacts" }
 
 [features]
-topology = []
 bigint-rug = ["sp1-curves/bigint-rug"]
 
 profiling = [

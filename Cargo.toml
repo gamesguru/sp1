@@ -23,7 +23,6 @@ members = [
   "crates/derive",
   "crates/helper",
   "crates/hypercube",
-  "crates/hypercube-benchmark",
   "crates/perf",
   "crates/primitives",
   "crates/prover",

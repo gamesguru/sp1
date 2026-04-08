@@ -7404,29 +7404,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp1-hypercube-benchmark"
-version = "0.1.0"
-dependencies = [
- "bincode",
- "p3-dft",
- "p3-field",
- "p3-fri",
- "p3-matrix",
- "p3-merkle-tree",
- "rand 0.8.5",
- "slop-algebra",
- "slop-challenger",
- "slop-koala-bear",
- "slop-symmetric",
- "slop-uni-stark",
- "sp1-hypercube",
- "sp1-primitives",
- "sp1-topology",
- "tracing",
- "tracing-subscriber 0.3.22",
-]
-
-[[package]]
 name = "sp1-jit"
 version = "6.0.2"
 dependencies = [
@@ -7789,11 +7766,25 @@ dependencies = [
 name = "sp1-topology"
 version = "6.0.2"
 dependencies = [
+ "bincode",
+ "p3-dft",
+ "p3-field",
+ "p3-fri",
  "p3-matrix",
+ "p3-merkle-tree",
+ "rand 0.8.5",
  "serde",
  "slop-air",
  "slop-algebra",
+ "slop-challenger",
+ "slop-koala-bear",
+ "slop-symmetric",
+ "slop-uni-stark",
  "sp1-derive",
+ "sp1-hypercube",
+ "sp1-primitives",
+ "tracing",
+ "tracing-subscriber 0.3.22",
 ]
 
 [[package]]
