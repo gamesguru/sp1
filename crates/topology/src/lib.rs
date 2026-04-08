@@ -7,7 +7,6 @@ use sp1_derive::AlignedBorrow;
 #[derive(Debug, Clone, AlignedBorrow)]
 #[repr(C)]
 pub struct TopologyCols<T, const DIM: usize> {
-    /// Clock cycle of the syscall (split into high and low parts)
     pub clk_high: T,
     pub clk_low: T,
 

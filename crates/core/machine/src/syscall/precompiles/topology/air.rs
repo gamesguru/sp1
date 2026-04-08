@@ -10,7 +10,7 @@ use crate::{air::SP1CoreAirBuilder, utils::next_multiple_of_32};
 
 use sp1_topology::{num_cols, TopologicalRouterAir, TopologyCols};
 
-const DIM: usize = 10;
+use sp1_primitives::TOPOLOGY_DIM as DIM;
 
 #[derive(Default)]
 pub struct TopologyChip;
@@ -85,10 +85,10 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
             let mut diff_count = 0;
             // Unpack u32 into DIM bits and find the single differing bit for the hypercube hop
             for i in 0..DIM {
-                let bit = (event.current_node >> i) & 1;
-                let next_bit = (event.next_node >> i) & 1;
-                cols.current_bits[i] = F::from_canonical_u32(bit);
-                cols.next_bits[i] = F::from_canonical_u32(next_bit);
+                let bit = ((event.current_node as u64) >> i) & 1;
+                let next_bit = ((event.next_node as u64) >> i) & 1;
+                cols.current_bits[i] = F::from_canonical_u64(bit);
+                cols.next_bits[i] = F::from_canonical_u64(next_bit);
 
                 cols.selectors[i] = F::zero();
                 if bit != next_bit {
@@ -130,7 +130,7 @@ where
         let mut current_node = AB::Expr::zero();
         let mut next_node = AB::Expr::zero();
         for i in 0..DIM {
-            let power = AB::Expr::from_canonical_u32(1 << i);
+            let power = AB::Expr::from_canonical_u64(1u64 << i);
             current_node += local.current_bits[i].into() * power.clone();
             next_node += local.next_bits[i].into() * power;
         }
@@ -140,8 +140,8 @@ where
             local.clk_high,
             local.clk_low,
             AB::F::from_canonical_u32(SyscallCode::TOPOLOGICAL_ROUTE.syscall_id()),
-            [current_node, next_node, AB::Expr::zero()],
-            [AB::Expr::zero(), AB::Expr::zero(), AB::Expr::zero()],
+            [current_node, AB::Expr::zero(), AB::Expr::zero()],
+            [next_node, AB::Expr::zero(), AB::Expr::zero()],
             local.is_routing,
             InteractionScope::Local,
         );

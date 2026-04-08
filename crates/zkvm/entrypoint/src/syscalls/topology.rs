@@ -15,7 +15,8 @@ pub extern "C" fn syscall_topological_route(curr: u32, next: u32) {
             "ecall",
             in("t0") crate::syscalls::TOPOLOGICAL_ROUTE,
             in("a0") curr,
-            in("a1") next
+            in("a1") next,
+            in("a2") 0,
         );
     }
 
