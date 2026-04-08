@@ -8,7 +8,9 @@ use std::{borrow::BorrowMut, mem::MaybeUninit};
 
 use crate::{air::SP1CoreAirBuilder, utils::next_multiple_of_32};
 
-use sp1_topology::{TopologicalRouterAir, TopologyCols, DIM, NUM_COLS};
+use sp1_topology::{num_cols, TopologicalRouterAir, TopologyCols};
+
+const DIM: usize = 10;
 
 #[derive(Default)]
 pub struct TopologyChip;
@@ -21,7 +23,7 @@ impl TopologyChip {
 
 impl<F> BaseAir<F> for TopologyChip {
     fn width(&self) -> usize {
-        NUM_COLS
+        num_cols::<DIM>()
     }
 }
 
@@ -50,10 +52,11 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
 
         let route_events = input.get_precompile_events(SyscallCode::TOPOLOGICAL_ROUTE);
         let num_event_rows = route_events.len();
+        let n_cols = num_cols::<DIM>();
 
         unsafe {
-            let padding_start = num_event_rows * NUM_COLS;
-            let padding_size = (padded_nb_rows - num_event_rows) * NUM_COLS;
+            let padding_start = num_event_rows * n_cols;
+            let padding_size = (padded_nb_rows - num_event_rows) * n_cols;
             if padding_size > 0 {
                 core::ptr::write_bytes(buffer[padding_start..].as_mut_ptr(), 0, padding_size);
             }
@@ -61,9 +64,9 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
 
         let buffer_ptr = buffer.as_mut_ptr() as *mut F;
         let values =
-            unsafe { core::slice::from_raw_parts_mut(buffer_ptr, num_event_rows * NUM_COLS) };
+            unsafe { core::slice::from_raw_parts_mut(buffer_ptr, num_event_rows * n_cols) };
 
-        values.chunks_mut(NUM_COLS).enumerate().for_each(|(idx, row)| {
+        values.chunks_mut(n_cols).enumerate().for_each(|(idx, row)| {
             let syscall_event = &route_events[idx].0;
             let event = &route_events[idx].1;
             let event = if let PrecompileEvent::TopologicalRoute(event) = event {
@@ -72,7 +75,7 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
                 unreachable!()
             };
 
-            let cols: &mut TopologyCols<F> = row.borrow_mut();
+            let cols: &mut TopologyCols<F, DIM> = row.borrow_mut();
 
             cols.clk_high = F::from_canonical_u32((syscall_event.clk >> 24) as u32);
             cols.clk_low = F::from_canonical_u32((syscall_event.clk & 0xFFFFFF) as u32);
@@ -80,7 +83,7 @@ impl<F: PrimeField32> MachineAir<F> for TopologyChip {
 
             let mut diff_bit_idx = 0;
             let mut diff_count = 0;
-            // Unpack u32 into 10 bits and find the single differing bit for the hypercube hop
+            // Unpack u32 into DIM bits and find the single differing bit for the hypercube hop
             for i in 0..DIM {
                 let bit = (event.current_node >> i) & 1;
                 let next_bit = (event.next_node >> i) & 1;
@@ -118,10 +121,10 @@ where
     fn eval(&self, builder: &mut AB) {
         let main = builder.main();
         let local = main.row_slice(0);
-        let local: &TopologyCols<AB::Var> = (*local).borrow();
+        let local: &TopologyCols<AB::Var, DIM> = (*local).borrow();
 
         // Use the library's AIR to evaluate the bit-flip and selector constraints
-        TopologicalRouterAir.eval(builder);
+        TopologicalRouterAir::<DIM>.eval(builder);
 
         // Reconstruct composite node IDs for the syscall interaction
         let mut current_node = AB::Expr::zero();

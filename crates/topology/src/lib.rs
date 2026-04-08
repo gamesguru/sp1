@@ -4,11 +4,9 @@ use slop_air::{Air, AirBuilder, BaseAir};
 use slop_algebra::AbstractField;
 use sp1_derive::AlignedBorrow;
 
-pub const DIM: usize = 10;
-
 #[derive(Debug, Clone, AlignedBorrow)]
 #[repr(C)]
-pub struct TopologyCols<T> {
+pub struct TopologyCols<T, const DIM: usize> {
     /// Clock cycle of the syscall (split into high and low parts)
     pub clk_high: T,
     pub clk_low: T,
@@ -16,28 +14,30 @@ pub struct TopologyCols<T> {
     /// Is this a real routing operation or padding?
     pub is_routing: T,
 
-    /// 10-dimensional Hypercube architecture
+    /// Dimensional Hypercube architecture
     pub current_bits: [T; DIM],
     pub selectors: [T; DIM],
     pub next_bits: [T; DIM],
 }
 
-pub const NUM_COLS: usize = core::mem::size_of::<TopologyCols<u8>>();
+pub const fn num_cols<const DIM: usize>() -> usize {
+    core::mem::size_of::<TopologyCols<u8, DIM>>()
+}
 
 #[derive(Default)]
-pub struct TopologicalRouterAir;
+pub struct TopologicalRouterAir<const DIM: usize>;
 
-impl<F> BaseAir<F> for TopologicalRouterAir {
+impl<F, const DIM: usize> BaseAir<F> for TopologicalRouterAir<DIM> {
     fn width(&self) -> usize {
-        NUM_COLS
+        num_cols::<DIM>()
     }
 }
 
-impl<AB: AirBuilder> Air<AB> for TopologicalRouterAir {
+impl<AB: AirBuilder, const DIM: usize> Air<AB> for TopologicalRouterAir<DIM> {
     fn eval(&self, builder: &mut AB) {
         let main = builder.main();
         let local = main.row_slice(0);
-        let local: &TopologyCols<AB::Var> = (*local).borrow();
+        let local: &TopologyCols<AB::Var, DIM> = (*local).borrow();
 
         builder.assert_bool(local.is_routing);
 
