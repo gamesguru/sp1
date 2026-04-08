@@ -136,7 +136,7 @@ where
         }
 
         // Receive syscall interaction, bridge EVM bounds
-        builder.send_syscall(
+        builder.receive_syscall(
             local.clk_high,
             local.clk_low,
             AB::F::from_canonical_u32(SyscallCode::TOPOLOGICAL_ROUTE.syscall_id()),
