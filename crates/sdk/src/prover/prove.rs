@@ -5,7 +5,9 @@ use sp1_core_executor::SP1ContextBuilder;
 use sp1_core_machine::io::SP1Stdin;
 use sp1_prover::SP1VerifyingKey;
 
-#[derive(Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
 /// A proving key for the SP1 prover.
 ///
 /// Contains only the minimal information required to implement the `ProvingKey` trait.
@@ -13,6 +15,7 @@ pub struct SP1ProvingKey {
     /// Verifying key for verifying a proof created with this proving key
     pub(crate) vk: SP1VerifyingKey,
     /// ELF of the program to be proven
+    #[serde(bound = "")]
     pub(crate) elf: Elf,
 }
 
