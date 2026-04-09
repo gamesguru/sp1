@@ -12,7 +12,7 @@ rust-version = { workspace = true }
 
 [dependencies]
 cfg-if = { workspace = true }
-getrandom_v2 = { workspace = true, features = ["custom"] }
+getrandom_v2 = { workspace = true }
 getrandom_v3 = { workspace = true }
 rand = { workspace = true }
 libm = { workspace = true, optional = true }
@@ -26,6 +26,11 @@ sp1-lib = { workspace = true, optional = true }
 sp1-primitives = { workspace = true }
 slop-algebra = { workspace = true, optional = true }
 blake3 = { workspace = true, optional = true }
+
+[target.'cfg(target_os = "zkvm")'.dependencies]
+getrandom_v2 = { workspace = true, features = ["custom"] }
+# getrandom v3 does not have a 'custom' feature, it uses 'register' which is handled differently.
+
 
 [features]
 default = ["libm", "lib"]
