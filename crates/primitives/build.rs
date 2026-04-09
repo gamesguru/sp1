@@ -5,8 +5,8 @@ use std::path::Path;
 fn main() {
     println!("cargo:rerun-if-env-changed=SP1_TOPOLOGY_DIM");
 
-    // Default to 10 if the environment variable is not provided.
-    // Note: KoalaBear field overflow occurs if DIM >= 31.
+    // Default to 10 if the env var not set.
+    // Note: KoalaBear/BabyBear field overflow occurs if DIM >= 31.
     let dim_str = env::var("SP1_TOPOLOGY_DIM").unwrap_or_else(|_| "10".to_string());
     let dim_val: usize = dim_str.parse().expect("SP1_TOPOLOGY_DIM must be a valid usize");
 

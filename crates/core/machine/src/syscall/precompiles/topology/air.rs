@@ -140,8 +140,8 @@ where
             local.clk_high,
             local.clk_low,
             AB::F::from_canonical_u32(SyscallCode::TOPOLOGICAL_ROUTE.syscall_id()),
-            [current_node, AB::Expr::zero(), AB::Expr::zero()],
-            [next_node, AB::Expr::zero(), AB::Expr::zero()],
+            [current_node.clone(), next_node.clone(), AB::Expr::zero()],
+            [current_node, next_node, AB::Expr::zero()],
             local.is_routing,
             InteractionScope::Local,
         );
