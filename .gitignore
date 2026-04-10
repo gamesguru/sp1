@@ -32,6 +32,8 @@ benchmark.csv
 crates/prover/maximal_shapes.sh
 
 # Build Artifacts
+build-artifacts/
+my-new-vks/
 recursion/gnark-ffi/build
 crates/prover/build
 crates/prover/data
@@ -42,6 +44,12 @@ crates/prover/powersOfTau28_hez_final.ptau
 crates/prover/semaphore-gnark-11
 crates/prover/trusted-setup
 crates/prover/vk
+
+# Large circuit binaries (prover keys and circuit definitions)
+*_pk.bin
+*_circuit.bin
+srs_lagrange.bin
+!crates/verifier/vk-artifacts/*_vk.bin
 
 
 # NSYS reports

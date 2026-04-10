@@ -7,6 +7,7 @@ on:
 
 jobs:
   patch-testing-cycles:
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on:
       [
         runs-on,

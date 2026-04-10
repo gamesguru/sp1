@@ -6,6 +6,7 @@ mod mprotect;
 mod poseidon2;
 mod sha256_compress;
 mod sha256_extend;
+mod topology;
 mod u256x2048_mul;
 mod uint256;
 mod uint256_ops;
@@ -24,6 +25,7 @@ use serde::{Deserialize, Serialize};
 pub use sha256_compress::*;
 pub use sha256_extend::*;
 use strum::{EnumIter, IntoEnumIterator};
+pub use topology::*;
 pub use u256x2048_mul::*;
 pub use uint256::*;
 pub use uint256_ops::*;
@@ -89,6 +91,8 @@ pub enum PrecompileEvent {
     Mprotect(MProtectEvent),
     /// POSEIDON2 precompile event.
     POSEIDON2(Poseidon2PrecompileEvent),
+    /// Topological Route precompile event.
+    TopologicalRoute(TopologicalRouteEvent),
 }
 
 /// Trait to retrieve all the local memory events from a vec of precompile events.
@@ -158,8 +162,8 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 PrecompileEvent::POSEIDON2(e) => {
                     iterators.push(e.local_mem_access.iter());
                 }
-                PrecompileEvent::Mprotect(_) => {
-                    // Mprotect doesn't have local memory access events
+                PrecompileEvent::Mprotect(_) | PrecompileEvent::TopologicalRoute(_) => {
+                    // Mprotect and TopologicalRoute don't have local memory access events
                 }
             }
         }
@@ -183,6 +187,11 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 }
                 PrecompileEvent::POSEIDON2(e) => {
                     iterators.push(e.local_page_prot_access.iter());
+                }
+                PrecompileEvent::TopologicalRoute(_) => {
+                    // TopologicalRoute is a lightweight bitwise constraint precompile.
+                    // It operates in constant-space and does not generate local memory
+                    // or page-protection traces requiring iteration/allocation overhead.
                 }
                 PrecompileEvent::U256xU2048Mul(e) => {
                     iterators.push(e.local_page_prot_access.iter());

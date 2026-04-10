@@ -17,6 +17,8 @@ pub use types::Elf;
 pub mod fri_params;
 pub mod utils;
 
+include!(concat!(env!("OUT_DIR"), "/topology_dim.rs"));
+
 /// The canonical version of the SP1 crate.
 pub const SP1_CRATE_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[allow(clippy::disallowed_types)]

@@ -26,14 +26,7 @@ concurrency:
 jobs:
   test-x86:
     name: Test (x86-64)
-    runs-on:
-      [
-        runs-on,
-        runner=64cpu-linux-x64,
-        spot=false,
-        disk=large,
-        "run-id=${{ github.run_id }}",
-      ]
+    runs-on: ubuntu-latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
@@ -84,19 +77,13 @@ jobs:
             --exclude sp1-gpu-zerocheck
             --features native-gnark,experimental,profiling
         env:
-          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0
+          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0 -Ccodegen-units=16
           RUST_BACKTRACE: 1
+          SP1_CIRCUIT_ARTIFACTS_URL: ${{ vars.SP1_CIRCUIT_ARTIFACTS_URL || 'https://sp1-circuits.s3-us-east-2.amazonaws.com' }}
 
   test-arm:
     name: Test (ARM)
-    runs-on:
-      [
-        runs-on,
-        runner=64cpu-linux-arm64,
-        spot=false,
-        disk=large,
-        "run-id=${{ github.run_id }}",
-      ]
+    runs-on: ubuntu-24.04-arm
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
@@ -147,19 +134,13 @@ jobs:
             --exclude sp1-gpu-zerocheck
             --features native-gnark,experimental
         env:
-          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0
+          RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0 -Ccodegen-units=16
           RUST_BACKTRACE: 1
+          SP1_CIRCUIT_ARTIFACTS_URL: ${{ vars.SP1_CIRCUIT_ARTIFACTS_URL || 'https://sp1-circuits.s3-us-east-2.amazonaws.com' }}
 
   test-verifier:
     name: Test Verifier Crate
-    runs-on:
-      [
-        runs-on,
-        runner=64cpu-linux-arm64,
-        spot=false,
-        disk=large,
-        "run-id=${{ github.run_id }}",
-      ]
+    runs-on: ubuntu-latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
@@ -193,7 +174,7 @@ jobs:
 
   lint:
     name: Formatting & Clippy
-    runs-on: [runs-on, runner=16cpu-linux-x64, disk=large, spot=false, "run-id=${{ github.run_id }}"]
+    runs-on: ubuntu-latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
@@ -231,7 +212,7 @@ jobs:
 
   check:
     name: Cargo Check
-    runs-on: [runs-on, runner=16cpu-linux-x64, disk=large, spot=false, "run-id=${{ github.run_id }}"]
+    runs-on: ubuntu-latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
       RUSTFLAGS: "--cfg sp1_debug_constraints"
@@ -272,7 +253,7 @@ jobs:
 
   check-nightly:
     name: Cargo Check (Nightly)
-    runs-on: [runs-on, runner=16cpu-linux-x64, disk=large, spot=false, "run-id=${{ github.run_id }}"]
+    runs-on: ubuntu-latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
@@ -313,14 +294,7 @@ jobs:
 
   examples:
     name: Examples
-    runs-on:
-      [
-        runs-on,
-        runner=64cpu-linux-x64,
-        disk=large,
-        spot=false,
-        "run-id=${{ github.run_id }}",
-      ]
+    runs-on: ubuntu-latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
@@ -355,7 +329,7 @@ jobs:
 
   # check-verifier-no-std:
   #   name: Check Verifier `no_std`
-  #   runs-on: [runs-on, runner=16cpu-linux-x64, disk=large, "run-id=${{ github.run_id }}"]
+  #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
   #   strategy:
   #     fail-fast: false
@@ -422,7 +396,7 @@ jobs:
   # TODO: Enable once recursion crates are fixed for multilinear.
   # build-in-host:
   #   name: "Build patches and zkvm in host"
-  #   runs-on: [runs-on, runner=16cpu-linux-x64, disk=large, "run-id=${{ github.run_id }}"]
+  #   runs-on: ubuntu-latest
   #   steps:
   #     - name: "Checkout sources"
   #       uses: "actions/checkout@v6"
@@ -439,6 +413,7 @@ jobs:
   # GPU Unit Tests
   test-gpu:
     name: Test (GPU)
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on:
       [
         "runs-on",
@@ -496,6 +471,7 @@ jobs:
   # GPU E2E Test
   test-gpu-e2e:
     name: GPU E2E (node)
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on:
       [
         "runs-on",
@@ -529,3 +505,4 @@ jobs:
           RUSTFLAGS: -Copt-level=3 -Cdebug-assertions -Coverflow-checks=y -Cdebuginfo=0 -C target-cpu=native
           RUST_BACKTRACE: 1
           CUDA_ARCHS: 89
+

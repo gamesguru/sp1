@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   test-simple-executor:
-    if: ${{ fromJSON(github.event.inputs.simple_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.simple_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -70,7 +70,7 @@ jobs:
           RUST_BACKTRACE: 1
 
   test-checkpoint-executor:
-    if: ${{ fromJSON(github.event.inputs.checkpoint_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.checkpoint_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +120,7 @@ jobs:
           RUST_BACKTRACE: 1
 
   test-trace-executor:
-    if: ${{ fromJSON(github.event.inputs.trace_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.trace_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     strategy:
       fail-fast: false
       matrix:

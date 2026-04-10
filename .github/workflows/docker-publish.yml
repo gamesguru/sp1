@@ -27,6 +27,7 @@ on:
 jobs:
   docker-publish-cli:
     name: docker-publish-cli
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on: ubuntu-latest
     # https://docs.github.com/en/actions/reference/authentication-in-a-workflow
     permissions:

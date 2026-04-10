@@ -15,6 +15,7 @@ mod secp256r1;
 mod sha_compress;
 mod sha_extend;
 mod sys;
+mod topology;
 mod u256x2048_mul;
 mod uint256_mul;
 mod uint256_ops;
@@ -42,6 +43,7 @@ pub use secp256r1::*;
 pub use sha_compress::*;
 pub use sha_extend::*;
 pub use sys::*;
+pub use topology::*;
 pub use u256x2048_mul::*;
 pub use uint256_mul::*;
 pub use uint256_ops::*;
@@ -181,3 +183,6 @@ pub const MPROTECT: u32 = 0x00_00_01_32;
 
 /// Executes the `POSEIDON2` permutation syscall.
 pub const POSEIDON2: u32 = 0x00_00_01_33;
+
+/// Executes the `TOPOLOGICAL_ROUTE` syscall.
+pub const TOPOLOGICAL_ROUTE: u32 = 0x00_01_01_40;

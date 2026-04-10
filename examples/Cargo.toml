@@ -50,6 +50,8 @@ members = [
   "ssz-withdrawals/script",
   "tendermint/program",
   "tendermint/script",
+  "topology/program",
+  "topology/script",
   "u256x2048-mul/program",
   "u256x2048-mul/script",
   "uint256/program",

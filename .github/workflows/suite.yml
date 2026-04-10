@@ -30,6 +30,7 @@ jobs:
     name: Build sp1-perf (with AVX512)
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+    if: ${{ vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     runs-on:
       [
         "runs-on",
@@ -81,7 +82,7 @@ jobs:
           mv target/release/sp1-perf ~/.sp1/bin/sp1-perf
 
   build-sp1-perf-cuda:
-    if: ${{ fromJSON(github.event.inputs.cuda_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.cuda_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     name: Build sp1-perf (CUDA)
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
@@ -134,7 +135,7 @@ jobs:
           mv target/release/sp1-perf ~/.sp1/bin/sp1-perf
 
   build-sp1-gpu-server:
-    if: ${{ fromJSON(github.event.inputs.cuda_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.cuda_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     name: Build sp1-gpu-server
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
@@ -201,7 +202,7 @@ jobs:
           cargo install --locked --root "$HOME/.sp1" --path sp1-gpu/crates/server
 
   test-cpu:
-    if: ${{ fromJSON(github.event.inputs.cpu_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.cpu_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -253,7 +254,7 @@ jobs:
         run: ~/.sp1/bin/sp1-perf --program workdir/program.bin --stdin workdir/stdin.bin --mode cpu
 
   test-cuda:
-    if: ${{ fromJSON(github.event.inputs.cuda_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.cuda_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -341,7 +342,7 @@ jobs:
         run: ~/.sp1/bin/sp1-perf --program workdir/program.bin --stdin workdir/stdin.bin --mode cuda
 
   test-network:
-    if: ${{ fromJSON(github.event.inputs.network_workloads)[0] != null }}
+    if: ${{ fromJSON(github.event.inputs.network_workloads)[0] != null && vars.SP1_GITHUB_ACTIONS_DISABLE_HEAVY_RUNNERS == '' }}
     strategy:
       fail-fast: false
       matrix:

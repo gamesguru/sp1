@@ -173,6 +173,10 @@ pub enum SyscallCode {
 
     /// Executes the `POSEIDON2` syscall.
     POSEIDON2 = 0x00_00_01_33,
+
+    /// Executes the `TOPOLOGICAL_ROUTE` syscall.
+    /// This provides a highly optimized constraint model for oblivious hypercube routing and data-flow algorithms.
+    TOPOLOGICAL_ROUTE = 0x00_01_01_40,
 }
 
 impl SyscallCode {
@@ -224,6 +228,7 @@ impl SyscallCode {
             #[allow(clippy::mistyped_literal_suffixes)]
             0x00_00_01_32 => SyscallCode::MPROTECT,
             0x00_00_01_33 => SyscallCode::POSEIDON2,
+            0x00_01_01_40 => SyscallCode::TOPOLOGICAL_ROUTE,
             _ => panic!("invalid syscall number: {value}"),
         }
     }
@@ -326,6 +331,7 @@ impl SyscallCode {
             }
             SyscallCode::MPROTECT => RiscvAirId::Mprotect,
             SyscallCode::POSEIDON2 => RiscvAirId::Poseidon2,
+            SyscallCode::TOPOLOGICAL_ROUTE => RiscvAirId::TopologicalRoute,
             SyscallCode::HALT
             | SyscallCode::WRITE
             | SyscallCode::ENTER_UNCONSTRAINED
@@ -379,6 +385,7 @@ impl SyscallCode {
             SyscallCode::U256XU2048_MUL => 72,
             SyscallCode::MPROTECT => 0,
             SyscallCode::POSEIDON2 => 8,
+            SyscallCode::TOPOLOGICAL_ROUTE => 4,
             _ => 0,
         }
     }
@@ -427,6 +434,8 @@ impl SyscallCode {
             SyscallCode::U256XU2048_MUL => 4 * 2,
             SyscallCode::MPROTECT => 1,
             SyscallCode::POSEIDON2 => 2,
+            SyscallCode::TOPOLOGICAL_ROUTE => 2,
+
             _ => 0,
         }
     }

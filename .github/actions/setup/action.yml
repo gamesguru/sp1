@@ -190,17 +190,21 @@ runs:
       uses: arduino/setup-protoc@v3
       with:
         version: "29.4"
+        repo-token: ${{ github.token }}
   
     - name: Echo docker buildx version
+      if: github.repository_owner == 'succinctlabs'
       shell: bash
       run: docker buildx version
 
     - name: Set up Docker
+      if: github.repository_owner == 'succinctlabs'
       uses: crazy-max/ghaction-setup-docker@v3
       with:
         version: 28.5.2
 
     - name: Set up Docker Buildx
+      if: github.repository_owner == 'succinctlabs'
       uses: docker/setup-buildx-action@v3
       with:
         driver-opts: |

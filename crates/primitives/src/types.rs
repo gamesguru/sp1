@@ -73,6 +73,31 @@ pub enum Elf {
     Dynamic(std::sync::Arc<[u8]>),
 }
 
+impl Serialize for Elf {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_bytes(self)
+    }
+}
+
+impl<'de> Deserialize<'de> for Elf {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let bytes = Vec::<u8>::deserialize(deserializer)?;
+        Ok(Elf::Dynamic(bytes.into()))
+    }
+}
+
+impl From<Elf> for Vec<u8> {
+    fn from(elf: Elf) -> Self {
+        elf.to_vec()
+    }
+}
+
 // todo!(n): implement serde for the ELF type.
 
 impl From<std::sync::Arc<[u8]>> for Elf {

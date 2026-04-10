@@ -19,6 +19,8 @@ use super::{
     write::write,
 };
 
+use super::precompiles::topology::topological_route;
+
 use sp1_curves::{
     edwards::ed25519::Ed25519,
     weierstrass::{
@@ -141,6 +143,7 @@ pub fn ecall_handler(ctx: &mut impl SyscallContext, code: SyscallCode) -> u64 {
             ctx.enter_unconstrained().expect("Failed to enter unconstrained mode");
             Some(1)
         }
+
         SyscallCode::EXIT_UNCONSTRAINED => {
             ctx.exit_unconstrained();
             Some(0)
@@ -152,10 +155,12 @@ pub fn ecall_handler(ctx: &mut impl SyscallContext, code: SyscallCode) -> u64 {
             uint256_ops(ctx, arg1, arg2)
         },
         SyscallCode::POSEIDON2 => unsafe { poseidon2(ctx, arg1, arg2) },
+        SyscallCode::TOPOLOGICAL_ROUTE => unsafe { topological_route(ctx, arg1, arg2) },
         SyscallCode::HALT => {
             ctx.set_exit_code(arg1 as u32);
             None
         }
+
         SyscallCode::MPROTECT
         | SyscallCode::VERIFY_SP1_PROOF
         | SyscallCode::COMMIT

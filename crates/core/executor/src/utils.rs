@@ -103,7 +103,7 @@ pub const fn get_msb(a: u64) -> u8 {
 pub fn rv64im_costs() -> HashMap<RiscvAirId, usize> {
     let costs: HashMap<String, usize> =
         serde_json::from_str(include_str!("./artifacts/rv64im_costs.json")).unwrap();
-    costs.into_iter().map(|(k, v)| (RiscvAirId::from_str(&k).unwrap(), v)).collect()
+    costs.into_iter().filter_map(|(k, v)| RiscvAirId::from_str(&k).ok().map(|id| (id, v))).collect()
 }
 
 /// Calculate the largest multiple of 32 less than of equal to a given integer `n`.

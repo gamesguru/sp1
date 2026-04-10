@@ -101,6 +101,10 @@ fn main() {
     #[cfg(feature = "profiling")]
     cmd.arg("--features").arg("profiling");
 
+    // Clear inherited RUSTFLAGS to prevent '-C extra-filename' bleed breaking the output path
+    cmd.env_remove("CARGO_ENCODED_RUSTFLAGS");
+    cmd.env_remove("RUSTFLAGS");
+
     let inner_target_dir = metadata.target_directory.clone().join("sp1-native-bins");
     cmd.env("CARGO_TARGET_DIR", &inner_target_dir);
 

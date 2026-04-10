@@ -64,5 +64,6 @@
   "SyscallCore": 10,
   "Bls12381FpOpAssign": 450,
   "ShaCompress": 206,
-  "LoadDouble": 39
+  "LoadDouble": 39,
+  "TopologicalRoute": 33
 }

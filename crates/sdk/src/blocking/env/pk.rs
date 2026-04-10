@@ -6,13 +6,16 @@ use sp1_cuda::CudaProvingKey;
 use sp1_primitives::Elf;
 use sp1_prover::SP1VerifyingKey;
 
-#[derive(Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
 pub enum EnvProvingKey {
     Cpu {
         pk: SP1ProvingKey,
         seal: sealed::Seal,
     },
     #[cfg(feature = "cuda")]
+    #[serde(skip)]
     Cuda {
         pk: CudaProvingKey,
         seal: sealed::Seal,
@@ -86,7 +89,9 @@ impl ProvingKey for EnvProvingKey {
 
 /// A seal for disallowing direct construction of `EnvProver` proving key.
 mod sealed {
-    #[derive(Clone)]
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Clone, Serialize, Deserialize)]
     pub struct Seal {
         _private: (),
     }
